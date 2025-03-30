@@ -45,7 +45,3 @@ int LEVELS[NUMBER_OF_LEVELS][LEVEL_HEIGHT][LEVEL_WIDTH] = {
 
     }
 };
-
-const int LEVEL_2[LEVEL_HEIGHT][LEVEL_WIDTH] = { // level 2 layout
-
-};
