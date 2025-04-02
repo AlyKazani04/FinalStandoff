@@ -7,14 +7,20 @@ int main(){
     // INITIALIZE GAME
 
     sf::RenderWindow window(sf::VideoMode(sf::Vector2u(LEVEL_WIDTH * TILE_SIZE * SCALE, LEVEL_HEIGHT * TILE_SIZE * SCALE)), "Final Standoff");
-    Level level;
-    level.LoadLevel(0);    // Game Starts at Level 0, then 1, then finally, 2
+    Floor floor;
+    Map map;
+    // Prop props;  
+    floor.LoadFloor(0);    // Game Starts at Level 0, then 1, then finally, 2
+    map.LoadMap();         // Walls
+
     sf::Clock clock;
+    int framecounter = 0;
     window.setFramerateLimit(60);  // Max FrameRate set to 60 
 
     while (window.isOpen()){
         // INITIALIZE (LOOP)
-        
+        framecounter++; // count frames...
+
 
         while (const std::optional event = window.pollEvent()){
             if (event->is<sf::Event::Closed>()){        // if the user closes the window
@@ -26,14 +32,18 @@ int main(){
         sf::Time timer = clock.restart();
         float deltaTime = timer.asMilliseconds(); // get the time since last frame in milliseconds
 
+
         // DRAW
         window.clear();     // clearing the window each frame
-        level.render(window); // rendering the level
+        floor.Render(window); // rendering the level
+        map.Render(window); // rendering the map
+        // render characters here
         
-        
+
         window.display();   // displaying the window (important)
     }
         // DEINITIALIZE GAME
+
 
         return 0;
 }
