@@ -117,3 +117,5 @@ int MAPS[NUMBER_OF_LEVELS][LEVEL_HEIGHT][LEVEL_WIDTH] = {
         { {16}, {16}, {16}, {16}, {16}, {16}, {16}, {16}, {16}, {16}, {16}, {16}, {16}, {16}, {16}, {16}, {16}, {16}, {16}, {16}, {16}, {16} }
     }
 };
+
+int PROPS[NUMBER_OF_LEVELS][LEVEL_HEIGHT][LEVEL_WIDTH] = {0};

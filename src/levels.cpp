@@ -7,6 +7,75 @@ struct SpriteBounds{
     sf::Vector2f size = {TILE_SIZE, TILE_SIZE}; // size of the sprite
 };
 
+class Props{
+    private:
+        sf::Texture propTexture; // prop texture
+        int (*currentProps)[LEVEL_WIDTH]; // Pointer to the prop layout
+        int LevelNumber;
+    public:
+        Props() : LevelNumber(0) {
+            currentProps = PROPS[0];
+            PROPS[0][3][1] = 33;
+            PROPS[0][3][20] = -33;
+            PROPS[0][5][1] = 33;
+            PROPS[0][5][20] = -33;
+            PROPS[0][11][20] = -33;
+            PROPS[0][11][1] = 33;
+        }
+        void LoadProps(){
+            if (!propTexture.loadFromFile("../resources/Dungeon_16x16_asset_pack/tileset.png")) {
+                std::cout << "Props didn't load successfully!\n";
+            } 
+            else { 
+                std::cout << "Props loaded successfully!\n";
+            }
+            propTexture.setSmooth(false);
+
+            currentProps = PROPS[LevelNumber];
+        }
+        void Render(sf::RenderWindow& window){
+            sf::Sprite tempSprite(propTexture);
+
+            for (int y = 0; y < LEVEL_HEIGHT; ++y) {
+                for (int x = 0; x < LEVEL_WIDTH; ++x) {
+                    int proptile = abs(currentProps[y][x]);
+
+                    if(PROPS[LevelNumber][y][x] != 0){
+                        if(abs(PROPS[LevelNumber][y][x]) == 33){
+                            if(PROPS[LevelNumber][y][x] == 33){
+                                // calculate prop sprite used from tile set
+                                int proptileX = (proptile % maptilesetColumns) * TILE_SIZE;
+                                int proptileY = (proptile / maptilesetColumns) * TILE_SIZE;
+        
+                                sf::IntRect proptilerect({proptileX, proptileY}, {TILE_SIZE, TILE_SIZE});
+        
+                                tempSprite.setTextureRect(proptilerect);
+                                tempSprite.setScale({SCALE, SCALE});
+                                float posx = x * TILE_SIZE * SCALE + (TILE_SIZE * SCALE) / 3;
+                                float posy = y * TILE_SIZE * SCALE;
+                                tempSprite.setPosition(sf::Vector2f(posx, posy));
+                            } else{
+                                // calculate prop sprite used from tile set
+                                int proptileX = (proptile % maptilesetColumns) * TILE_SIZE;
+                                int proptileY = (proptile / maptilesetColumns) * TILE_SIZE;
+                                sf::IntRect proptilerect({proptileX, proptileY}, {TILE_SIZE, TILE_SIZE});
+                                tempSprite.setTextureRect(proptilerect);
+                                tempSprite.setScale({-SCALE, SCALE});
+                                float posx = (x + 1) * TILE_SIZE * SCALE - (TILE_SIZE * SCALE) / 3;
+                                float posy = y * TILE_SIZE * SCALE;
+                                tempSprite.setPosition(sf::Vector2f(posx, posy));
+
+                            }
+                        }
+                    } else{ continue; }
+
+                    window.draw(tempSprite);
+                }
+            }            
+        }
+        ~Props(){}
+};
+
 class Map {
     private:
         sf::Texture mapTexture; // map tile texture

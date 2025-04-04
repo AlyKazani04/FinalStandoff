@@ -9,9 +9,11 @@ int main(){
     sf::RenderWindow window(sf::VideoMode(sf::Vector2u(LEVEL_WIDTH * TILE_SIZE * SCALE, LEVEL_HEIGHT * TILE_SIZE * SCALE)), "Final Standoff");
     Floor floor;
     Map map;
+    Props prop;
     // Prop props;  
     floor.LoadFloor(0);    // Game Starts at Level 0, then 1, then finally, 2
     map.LoadMap();         // Walls
+    prop.LoadProps();       // Props
 
     sf::Clock clock;
     int framecounter = 0;
@@ -37,6 +39,7 @@ int main(){
         window.clear();     // clearing the window each frame
         floor.Render(window); // rendering the level
         map.Render(window); // rendering the map
+        prop.Render(window); // rendering the props
         // render characters here
         
 
