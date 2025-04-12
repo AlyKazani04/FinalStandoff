@@ -11,18 +11,15 @@ class Props{
     private:
         sf::Texture propTexture; // prop texture
         int (*currentProps)[LEVEL_WIDTH]; // Pointer to the prop layout
+        struct SpriteBounds propsprites[LEVEL_WIDTH][LEVEL_HEIGHT]; // for each props, size and position, to calc collision 
         int LevelNumber;
     public:
         Props() : LevelNumber(0) {
             currentProps = PROPS[0];
-            PROPS[0][3][1] = 33;
-            PROPS[0][3][20] = -33;
-            PROPS[0][5][1] = 33;
-            PROPS[0][5][20] = -33;
-            PROPS[0][11][20] = -33;
-            PROPS[0][11][1] = 33;
         }
-        void LoadProps(){
+        void LoadProps(const int level){  //    takes the level number and loads the corresponding props layout
+            LevelNumber = level;
+
             if (!propTexture.loadFromFile("../resources/Dungeon_16x16_asset_pack/tileset.png")) {
                 std::cout << "Props didn't load successfully!\n";
             } 
@@ -41,8 +38,8 @@ class Props{
                     int proptile = abs(currentProps[y][x]);
 
                     if(PROPS[LevelNumber][y][x] != 0){
-                        if(abs(PROPS[LevelNumber][y][x]) == 33){
-                            if(PROPS[LevelNumber][y][x] == 33){
+                        if(abs(PROPS[LevelNumber][y][x]) == 33){ // torch lateral wall
+                            if(PROPS[LevelNumber][y][x] == 33){ // torch on the left
                                 // calculate prop sprite used from tile set
                                 int proptileX = (proptile % maptilesetColumns) * TILE_SIZE;
                                 int proptileY = (proptile / maptilesetColumns) * TILE_SIZE;
@@ -54,17 +51,47 @@ class Props{
                                 float posx = x * TILE_SIZE * SCALE + (TILE_SIZE * SCALE) / 3;
                                 float posy = y * TILE_SIZE * SCALE;
                                 tempSprite.setPosition(sf::Vector2f(posx, posy));
-                            } else{
+                            } else{ // torch on the right
                                 // calculate prop sprite used from tile set
                                 int proptileX = (proptile % maptilesetColumns) * TILE_SIZE;
                                 int proptileY = (proptile / maptilesetColumns) * TILE_SIZE;
+
                                 sf::IntRect proptilerect({proptileX, proptileY}, {TILE_SIZE, TILE_SIZE});
+                                
                                 tempSprite.setTextureRect(proptilerect);
                                 tempSprite.setScale({-SCALE, SCALE});
                                 float posx = (x + 1) * TILE_SIZE * SCALE - (TILE_SIZE * SCALE) / 3;
                                 float posy = y * TILE_SIZE * SCALE;
                                 tempSprite.setPosition(sf::Vector2f(posx, posy));
+                            }
+                        } else{
+                            if(PROPS[LevelNumber][y][x] == 26){ // door
+                                // calculate prop sprite used from tile set
+                                int proptileX = (proptile % maptilesetColumns) * TILE_SIZE;
+                                int proptileY = (proptile / maptilesetColumns) * TILE_SIZE;
 
+                                sf::IntRect proptilerect({proptileX, proptileY}, {TILE_SIZE, TILE_SIZE});
+
+                                tempSprite.setTextureRect(proptilerect);
+                                tempSprite.setScale({SCALE, SCALE-1});
+                                float posx = x * TILE_SIZE * SCALE + (TILE_SIZE * SCALE);
+                                float posy = y * TILE_SIZE * (SCALE + 1);
+                                tempSprite.setPosition(sf::Vector2f(posx, posy));
+                            } else{ // for a collidable prop
+                                // calculate prop sprite used from tile set
+                                int proptileX = (proptile % maptilesetColumns) * TILE_SIZE;
+                                int proptileY = (proptile / maptilesetColumns) * TILE_SIZE;
+
+                                sf::IntRect proptilerect({proptileX, proptileY}, {TILE_SIZE, TILE_SIZE});
+
+                                tempSprite.setTextureRect(proptilerect);
+                                tempSprite.setScale({SCALE, SCALE});
+                                float posx = x * TILE_SIZE * SCALE + (TILE_SIZE * SCALE);
+                                float posy = y * TILE_SIZE * SCALE;
+                                tempSprite.setPosition(sf::Vector2f(posx, posy));  
+
+                                propsprites[x][y].position = tempSprite.getGlobalBounds().position;
+                                propsprites[x][y].size = tempSprite.getGlobalBounds().size;
                             }
                         }
                     } else{ continue; }
@@ -82,7 +109,7 @@ class Map {
         int (*currentMap)[LEVEL_WIDTH]; // Pointer to the current map array
         int LevelNumber; // Current level number
 
-        struct SpriteBounds mapsprites[LEVEL_WIDTH][LEVEL_HEIGHT];  // Array of map sprite bounds
+        struct SpriteBounds mapsprites[LEVEL_WIDTH][LEVEL_HEIGHT];  // Array of map sprite bounds for wall collisions
 
     public:
         Map() : LevelNumber(0) {
@@ -93,7 +120,9 @@ class Map {
             return mapsprites[index_X][index_Y];  
         };
 
-        void LoadMap(){
+        void LoadMap(const int level){  //    takes the level number and loads the corresponding map
+            LevelNumber = level;
+
             if (!mapTexture.loadFromFile("../resources/Dungeon_16x16_asset_pack/tileset.png")) {
                 std::cout << "Map didn't load successfully!\n";
             } 
@@ -146,24 +175,16 @@ class Floor {
         void LoadFloor(const int level) { //    takes the level number and loads the corresponding level
             if (level >= 0 && level < NUMBER_OF_LEVELS) {
                 LevelNumber = level;
-                if ( LevelNumber == 0) {
-                    if (!floorTexture.loadFromFile("../resources/Mini_Dungeon_Tileset/FREE/1_MiniDungeon_Tileset_Background1.png")) {
-                        std::cout << "Texture didn't load successfully!\n";
-                    } 
-                    else { 
-                        std::cout << "Texture loaded successfully!\n"; 
-                    }
-                    floorTexture.setSmooth(false);
 
+                if (!floorTexture.loadFromFile("../resources/Mini_Dungeon_Tileset/FREE/1_MiniDungeon_Tileset_Background1.png")) {
+                    std::cout << "Texture didn't load successfully!\n";
+                } 
+                else { 
+                    std::cout << "Texture loaded successfully!\n"; 
                 }
-                if ( LevelNumber == 1) {
-                    
-                    floorTexture.setSmooth(false);
 
-                }
-                if ( LevelNumber == 2) {
+                floorTexture.setSmooth(false);
 
-                }
                 currentFloor = FLOORS[LevelNumber];
             }
         }

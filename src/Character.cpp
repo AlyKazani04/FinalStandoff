@@ -48,7 +48,7 @@ public:
         BACK = 2
     };
 
-    Character() : animationSpeed(0.2f), currentFrame(0), currentAnimation(IDLE), currentDirection(FRONT), isFacingRight(true),sprite(getGlobalTexture()) {
+    Character() : animationSpeed(0.8f), currentFrame(0), currentAnimation(IDLE), currentDirection(FRONT), isFacingRight(true),sprite(getGlobalTexture()) {
         // Load sprite sheet
         if (!spriteSheet.loadFromFile("../resources/player.png")) {
             std::cout << "Error loading player sprite sheet" << std::endl;

@@ -1,6 +1,8 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include "levels.cpp"
 #include "constants.cpp"
+#include "sounds.cpp"
 
 int main(){
 
@@ -10,14 +12,18 @@ int main(){
     Floor floor;
     Map map;
     Props prop;
-    // Prop props;  
+    BackGroundMusic bgm;
+
     floor.LoadFloor(0);    // Game Starts at Level 0, then 1, then finally, 2
-    map.LoadMap();         // Walls
-    prop.LoadProps();       // Props
+    map.LoadMap(0);         // Walls
+    prop.LoadProps(0);       // Props
+
+    window.setFramerateLimit(60);  // Max FrameRate set to 60 
+    int framecounter = 0;
+    bgm.setVolume(70);
+    bgm.play();
 
     sf::Clock clock;
-    int framecounter = 0;
-    window.setFramerateLimit(60);  // Max FrameRate set to 60 
 
     while (window.isOpen()){
         // INITIALIZE (LOOP)
@@ -26,6 +32,7 @@ int main(){
 
         while (const std::optional event = window.pollEvent()){
             if (event->is<sf::Event::Closed>()){        // if the user closes the window
+                bgm.stop(); // stop the music
                 window.close();
             }
         }
@@ -33,8 +40,9 @@ int main(){
         // UPDATE
         sf::Time timer = clock.restart();
         float deltaTime = timer.asMilliseconds(); // get the time since last frame in milliseconds
+        
 
-
+        
         // DRAW
         window.clear();     // clearing the window each frame
         floor.Render(window); // rendering the level
