@@ -2,16 +2,11 @@
 #include <iostream>
 #include "constants.cpp"
 
-struct SpriteBounds{
-    sf::Vector2f position; // position of the sprite
-    sf::Vector2f size = {TILE_SIZE, TILE_SIZE}; // size of the sprite
-};
-
 class Props{
     private:
         sf::Texture propTexture; // prop texture
         int (*currentProps)[LEVEL_WIDTH]; // Pointer to the prop layout
-        struct SpriteBounds propsprites[LEVEL_WIDTH][LEVEL_HEIGHT]; // for each props, size and position, to calc collision 
+        sf::FloatRect propsprites[LEVEL_WIDTH][LEVEL_HEIGHT]; // for each props, size and position, to calc collision 
         int LevelNumber;
     public:
         Props() : LevelNumber(0) {
@@ -64,7 +59,12 @@ class Props{
                                 float posy = y * TILE_SIZE * SCALE;
                                 tempSprite.setPosition(sf::Vector2f(posx, posy));
                             }
-                        } else{
+                        }
+                        // if(PROPS[LevelNumber][y][x] == 24){
+                        //     if()
+
+                        // }
+                         else{
                             if(PROPS[LevelNumber][y][x] == 26){ // door
                                 // calculate prop sprite used from tile set
                                 int proptileX = (proptile % maptilesetColumns) * TILE_SIZE;
@@ -109,20 +109,19 @@ class Map {
         int (*currentMap)[LEVEL_WIDTH]; // Pointer to the current map array
         int LevelNumber; // Current level number
 
-        struct SpriteBounds mapsprites[LEVEL_WIDTH][LEVEL_HEIGHT];  // Array of map sprite bounds for wall collisions
+        sf::FloatRect mapsprites[LEVEL_WIDTH][LEVEL_HEIGHT];  // Array of map sprite bounds for wall collisions
 
     public:
         Map() : LevelNumber(0) {
             currentMap = MAPS[0];
         }
 
-        SpriteBounds getMapTileSprite(int index_X , int index_Y){ // returns the sprite of the map tile at the given index
+        sf::FloatRect getMapTileSprite(int index_X , int index_Y){ // returns the sprite of the map tile at the given index
             return mapsprites[index_X][index_Y];  
         };
 
         void LoadMap(const int level){  //    takes the level number and loads the corresponding map
             LevelNumber = level;
-
             if (!mapTexture.loadFromFile("../resources/Dungeon_16x16_asset_pack/tileset.png")) {
                 std::cout << "Map didn't load successfully!\n";
             } 
@@ -164,51 +163,125 @@ class Map {
 class Floor {
     private:
         sf::Texture floorTexture; // floor tile texture
+        sf::Texture lavaTexture; // lava tile texture
         const int (*currentFloor)[LEVEL_WIDTH]; // Pointer to the current floor array
+        const int (*LavaPointer)[LEVEL_WIDTH]; // Pointer to the Lava array
         int LevelNumber; // current level number
 
+        // Animated Lava Functionality
+        sf::Clock lavaAnimClock;
+        sf::Time lavaFrameDuration = sf::milliseconds(200); // 10 fps
+        int currentlavaframe = 0;
+
+
+        void LavaAnimUpdate(){
+            if (lavaAnimClock.getElapsedTime() > lavaFrameDuration) {
+                currentlavaframe = (currentlavaframe + 1) % lavatilesetColumns;
+                lavaAnimClock.restart();
+            }
+        }
     public:
         Floor() : LevelNumber(0) {
             currentFloor = FLOORS[0];
+            lavaAnimClock.start();
         }
 
         void LoadFloor(const int level) { //    takes the level number and loads the corresponding level
-            if (level >= 0 && level < NUMBER_OF_LEVELS) {
+            if (level == 0 || level == 1) {
                 LevelNumber = level;
 
                 if (!floorTexture.loadFromFile("../resources/Mini_Dungeon_Tileset/FREE/1_MiniDungeon_Tileset_Background1.png")) {
-                    std::cout << "Texture didn't load successfully!\n";
+                    std::cout << "Floor didn't load successfully!\n";
                 } 
                 else { 
-                    std::cout << "Texture loaded successfully!\n"; 
+                    std::cout << "Floor loaded successfully!\n"; 
                 }
-
-                floorTexture.setSmooth(false);
-
-                currentFloor = FLOORS[LevelNumber];
             }
+            if(level == 2) {
+                LevelNumber = level;
+                if (!floorTexture.loadFromFile("../resources/Mini_Dungeon_Tileset/FREE/1_MiniDungeon_Tileset_Background1.png")) {
+                    std::cout << "Floor didn't load successfully!\n";
+                } 
+                else { 
+                    std::cout << "Floor loaded successfully!\n"; 
+                }
+                if (!lavaTexture.loadFromFile("../resources/Top_Down_Lava_Tileset_16x16_Free/FREE_TILESET_FILES/Environment(With_Animations)/Burning_Lava/spritesheet-burninglava.png")) {
+                    std::cout << "Lava didn't load successfully!\n";
+                } 
+                else { 
+                    std::cout << "Lava loaded successfully!\n"; 
+                }
+                LavaPointer = LAVA;
+                lavaTexture.setSmooth(false);
+            }
+            floorTexture.setSmooth(false);
+            
+            
+            currentFloor = FLOORS[LevelNumber];
         }
 
         void Render(sf::RenderWindow& window) {
 
             sf::Sprite floorSprite(floorTexture);
+            sf::Sprite lavaSprite(lavaTexture);
 
-            for (int y = 0; y < LEVEL_HEIGHT; ++y) {
-                for (int x = 0; x < LEVEL_WIDTH; ++x) {
+            if(LevelNumber == 0 || LevelNumber == 1) {
+                for (int y = 0; y < LEVEL_HEIGHT; ++y) {
+                    for (int x = 0; x < LEVEL_WIDTH; ++x) {
 
-                    int floortile = currentFloor[y][x];
+                        int floortile = currentFloor[y][x];
 
-                    // Calculate row and column in the tileset
-                    int floortileX = (floortile % floortilesetColumns) * TILE_SIZE;
-                    int floortileY = (floortile / floortilesetColumns) * TILE_SIZE;
+                        // Calculate row and column in the tileset
+                        int floortileX = (floortile % floortilesetColumns) * TILE_SIZE;
+                        int floortileY = (floortile / floortilesetColumns) * TILE_SIZE;
 
-                    sf::IntRect floortilerect({floortileX, floortileY}, {TILE_SIZE, TILE_SIZE});
+                        sf::IntRect floortilerect({floortileX, floortileY}, {TILE_SIZE, TILE_SIZE});
 
-                    floorSprite.setTextureRect(floortilerect);
-                    floorSprite.setScale({SCALE, SCALE});
-                    floorSprite.setPosition(sf::Vector2f((float)(x * TILE_SIZE * SCALE), (float)(y * TILE_SIZE * SCALE)));
+                        floorSprite.setTextureRect(floortilerect);
+                        floorSprite.setScale({SCALE, SCALE});
+                        floorSprite.setPosition(sf::Vector2f((float)(x * TILE_SIZE * SCALE), (float)(y * TILE_SIZE * SCALE)));
 
-                    window.draw(floorSprite);
+                        window.draw(floorSprite);
+                    }
+                }
+            }
+            if(LevelNumber == 2){
+                LavaAnimUpdate();
+                for (int y = 0; y < LEVEL_HEIGHT; ++y) {
+                    for (int x = 0; x < LEVEL_WIDTH; ++x) {
+                        
+                        int floortile = currentFloor[y][x]; // Floor tileID
+                        int lavatile = LavaPointer[y][x]; // Lava tileID
+
+    
+                        // Calculate row and column in the tileset
+                        int floortileX = (floortile % floortilesetColumns) * TILE_SIZE;
+                        int floortileY = (floortile / floortilesetColumns) * TILE_SIZE;
+    
+                        sf::IntRect floortilerect({floortileX, floortileY}, {TILE_SIZE, TILE_SIZE});
+    
+                        floorSprite.setTextureRect(floortilerect);
+                        floorSprite.setScale({SCALE, SCALE});
+                        floorSprite.setPosition(sf::Vector2f((x * TILE_SIZE * SCALE), (y * TILE_SIZE * SCALE)));
+    
+                        window.draw(floorSprite);
+
+                        if (lavatile != 3) { // if theres lava, 3 is empty
+                            // Calculate row and column in the tileset
+                            int lavaFrameWidth = TILE_SIZE * lavatilesetColumns; 
+                            
+                            int lavatileX = ((currentlavaframe) * lavaFrameWidth) + ((lavatile % lavatilesetColumns) * TILE_SIZE);
+                            int lavatileY = (lavatile / lavatilesetColumns) * TILE_SIZE; // if lavatile values range above 6
+            
+                            sf::IntRect lavatilerRect({lavatileX, lavatileY}, {TILE_SIZE, TILE_SIZE});
+
+                            lavaSprite.setTextureRect(lavatilerRect);
+                            lavaSprite.setScale({SCALE, SCALE});
+                            lavaSprite.setPosition(sf::Vector2f(x * TILE_SIZE * SCALE, y * TILE_SIZE * SCALE));
+
+                            window.draw(lavaSprite);
+                        }
+                    }
                 }
             }
         }
