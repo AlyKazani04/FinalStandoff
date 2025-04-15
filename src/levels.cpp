@@ -55,7 +55,8 @@ class Props{
                                 
                                 tempSprite.setTextureRect(proptilerect);
                                 tempSprite.setScale({-SCALE, SCALE});
-                                float posx = (x + 1) * TILE_SIZE * SCALE - (TILE_SIZE * SCALE) / 3;
+                                float torchx_displacement = (LevelNumber == 1 || LevelNumber == 0) ? (TILE_SIZE * SCALE) / 3 : 0 ;
+                                float posx = (x + 1) * TILE_SIZE * SCALE - torchx_displacement;
                                 float posy = y * TILE_SIZE * SCALE;
                                 tempSprite.setPosition(sf::Vector2f(posx, posy));
                             }

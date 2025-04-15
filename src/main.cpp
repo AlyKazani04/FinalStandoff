@@ -13,14 +13,16 @@ int main(){
     Map map;
     Props prop;
     BackGroundMusic bgm;
+    int LevelNumber = 1;
 
-    floor.LoadFloor(0);    // Game Starts at Level 0, then 1, then finally, 2
-    map.LoadMap(0);         // Walls
-    prop.LoadProps(0);       // Props
+    floor.LoadFloor(LevelNumber);    // Game Starts at Level 0, then 1, then finally, 2
+    map.LoadMap(LevelNumber);         // Walls
+    prop.LoadProps(LevelNumber);       // Props
+    bgm.LoadMusic(LevelNumber);         // Music
 
     window.setFramerateLimit(60);  // Max FrameRate set to 60 
     int framecounter = 0;
-    bgm.setVolume(70);
+    // bgm.setVolume(50);
     bgm.play();
 
     sf::Clock clock;
@@ -29,22 +31,22 @@ int main(){
         // INITIALIZE (LOOP)
         framecounter++; // count frames...
 
-
         while (const std::optional event = window.pollEvent()){
-            if (event->is<sf::Event::Closed>()){        // if the user closes the window
+            if (event->is<sf::Event::Closed>() || (event->is<sf::Event::KeyPressed>() && event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape)){ 
                 bgm.stop(); // stop the music
+
                 window.close();
             }
         }
         
         // UPDATE
         sf::Time timer = clock.restart();
-        float deltaTime = timer.asMilliseconds(); // get the time since last frame in milliseconds
+        float deltaTime = timer.asSeconds(); // get the time since last frame in milliseconds
         
-
         
         // DRAW
         window.clear();     // clearing the window each frame
+
         floor.Render(window); // rendering the level
         map.Render(window); // rendering the map
         prop.Render(window); // rendering the props
@@ -52,6 +54,10 @@ int main(){
         
 
         window.display();   // displaying the window (important)
+
+
+        // DEINITIALIZE (LOOP), if needed
+
     }
         // DEINITIALIZE GAME
 

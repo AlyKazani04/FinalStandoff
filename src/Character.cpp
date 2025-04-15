@@ -189,7 +189,7 @@ int main() {
     sf::Clock clock;
 
     bool isDead = false;
-    
+    window.setFramerateLimit(60);
     while (window.isOpen()) {
         
         sf::Time deltaTime = clock.restart();
