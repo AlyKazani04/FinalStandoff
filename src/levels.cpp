@@ -1,3 +1,4 @@
+#pragma once
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include "constants.cpp"
@@ -6,13 +7,34 @@ class Props{
     private:
         sf::Texture propTexture; // prop texture
         int (*currentProps)[LEVEL_WIDTH]; // Pointer to the prop layout
-        sf::FloatRect propsprites[LEVEL_WIDTH][LEVEL_HEIGHT]; // for each props, size and position, to calc collision 
+        sf::FloatRect propsprites[LEVEL_WIDTH][LEVEL_HEIGHT] = {sf::FloatRect({0,0},{TILE_SIZE, TILE_SIZE})}; // for each props, size and position, to calc collision 
         int LevelNumber;
     public:
         Props() : LevelNumber(0) {
             currentProps = PROPS[0];
         }
-        void LoadProps(const int level){  //    takes the level number and loads the corresponding props layout
+        bool isCollidable(int tile) const{
+            return tile == 24 || tile == 31 || tile == 26;
+        }
+        int getPropID(int x, int y) const{ // returns the prop id at the given position
+            return currentProps[y][x];
+        }
+        void collectCoin(int x, int y){ // sets coin to an empty tile
+            currentProps[y][x] = 0;
+        }
+        std::vector<sf::FloatRect> GetPropCollisionRects() const {
+            std::vector<sf::FloatRect> collidables;
+            for (int y = 0; y < LEVEL_HEIGHT; ++y) {
+                for (int x = 0; x < LEVEL_WIDTH; ++x) {
+                    if (isCollidable(PROPS[LevelNumber][y][x])) { // replace with relevant prop IDs
+                        collidables.push_back(propsprites[x][y]);
+                    }
+                }
+            }
+            return collidables;
+        }       
+
+        void LoadProps(const int level){  // takes the level number and loads the corresponding props layout
             LevelNumber = level;
 
             if (!propTexture.loadFromFile("../resources/Dungeon_16x16_asset_pack/tileset.png")) {
@@ -25,6 +47,7 @@ class Props{
 
             currentProps = PROPS[LevelNumber];
         }
+        
         void Render(sf::RenderWindow& window){
             sf::Sprite tempSprite(propTexture);
 
@@ -43,8 +66,14 @@ class Props{
         
                                 tempSprite.setTextureRect(proptilerect);
                                 tempSprite.setScale({SCALE, SCALE});
-                                float posx = x * TILE_SIZE * SCALE + (TILE_SIZE * SCALE) / 3;
+                                float deviation = 0;
+                                if(LevelNumber == 2){ // move all prop tiles in level 2 slightly to the left 
+                                    deviation = 7;
+                                }
+
+                                float posx = x * TILE_SIZE * SCALE + (TILE_SIZE * SCALE) / 3 - deviation;
                                 float posy = y * TILE_SIZE * SCALE;
+
                                 tempSprite.setPosition(sf::Vector2f(posx, posy));
                             } else{ // torch on the right
                                 // calculate prop sprite used from tile set
@@ -55,16 +84,20 @@ class Props{
                                 
                                 tempSprite.setTextureRect(proptilerect);
                                 tempSprite.setScale({-SCALE, SCALE});
+
                                 float torchx_displacement = (LevelNumber == 1 || LevelNumber == 0) ? (TILE_SIZE * SCALE) / 3 : 0 ;
-                                float posx = (x + 1) * TILE_SIZE * SCALE - torchx_displacement;
+
+                                float deviation = 0;
+                                if(LevelNumber == 2){ // move all prop tiles in level 2 slightly to the left 
+                                    deviation = 7;
+                                }
+
+                                float posx = (x + 1) * TILE_SIZE * SCALE - torchx_displacement - deviation;
                                 float posy = y * TILE_SIZE * SCALE;
+
                                 tempSprite.setPosition(sf::Vector2f(posx, posy));
                             }
                         }
-                        // if(PROPS[LevelNumber][y][x] == 24){
-                        //     if()
-
-                        // }
                          else{
                             if(PROPS[LevelNumber][y][x] == 26){ // door
                                 // calculate prop sprite used from tile set
@@ -75,8 +108,15 @@ class Props{
 
                                 tempSprite.setTextureRect(proptilerect);
                                 tempSprite.setScale({SCALE, SCALE-1});
-                                float posx = x * TILE_SIZE * SCALE + (TILE_SIZE * SCALE);
+
+                                float deviation = 0;
+                                if(LevelNumber == 2){ // move all prop tiles in level 2 slightly to the left 
+                                    deviation = 7;
+                                }
+
+                                float posx = x * TILE_SIZE * SCALE + (TILE_SIZE * SCALE) - deviation;
                                 float posy = y * TILE_SIZE * (SCALE + 1);
+
                                 tempSprite.setPosition(sf::Vector2f(posx, posy));
                             } else{ // for a collidable prop
                                 // calculate prop sprite used from tile set
@@ -87,7 +127,16 @@ class Props{
 
                                 tempSprite.setTextureRect(proptilerect);
                                 tempSprite.setScale({SCALE, SCALE});
-                                float posx = x * TILE_SIZE * SCALE + (TILE_SIZE * SCALE);
+
+                                float deviation = 0;
+                                if(LevelNumber == 1 || LevelNumber == 0){
+                                    deviation = 1;
+                                }
+                                if(LevelNumber == 2){ // move all prop tiles in level 2 slightly to the left 
+                                    deviation = 7;
+                                }
+
+                                float posx = x * TILE_SIZE * SCALE + (TILE_SIZE * SCALE) - deviation;
                                 float posy = y * TILE_SIZE * SCALE;
                                 tempSprite.setPosition(sf::Vector2f(posx, posy));  
 
@@ -101,6 +150,7 @@ class Props{
                 }
             }            
         }
+
         ~Props(){}
 };
 
@@ -117,9 +167,17 @@ class Map {
             currentMap = MAPS[0];
         }
 
-        sf::FloatRect getMapTileSprite(int index_X , int index_Y){ // returns the sprite of the map tile at the given index
-            return mapsprites[index_X][index_Y];  
-        };
+        std::vector<sf::FloatRect> GetMapCollisionRects() const {
+            std::vector<sf::FloatRect> collidables;
+            for (int y = 0; y < LEVEL_HEIGHT; ++y) {
+                for (int x = 0; x < LEVEL_WIDTH; ++x) {
+                    if (MAPS[LevelNumber][y][x] != 16 && MAPS[LevelNumber][y][x] != 20) { 
+                        collidables.push_back(mapsprites[x][y]);
+                    }
+                }
+            }
+            return collidables;
+        }
 
         void LoadMap(const int level){  //    takes the level number and loads the corresponding map
             LevelNumber = level;
@@ -148,10 +206,20 @@ class Map {
 
                     tempSprite.setTextureRect(maptilerect);
                     tempSprite.setScale({SCALE, SCALE});
-                    tempSprite.setPosition(sf::Vector2f((float)(x * TILE_SIZE * SCALE), (float)(y * TILE_SIZE * SCALE)));
 
+                    float deviation = 0;
+                    if(LevelNumber == 2){ // move all map tiles in level 2 to the left
+                        deviation = 7;
+                    }
+
+                    float posx = x * TILE_SIZE * SCALE - deviation;
+                    float posy = y * TILE_SIZE * SCALE;
+                    tempSprite.setPosition(sf::Vector2f(posx, posy));
+
+                    
                     mapsprites[x][y].position = tempSprite.getGlobalBounds().position;
                     mapsprites[x][y].size = tempSprite.getGlobalBounds().size;
+                    
 
                     window.draw(tempSprite);
                 }
@@ -171,7 +239,7 @@ class Floor {
 
         // Animated Lava Functionality
         sf::Clock lavaAnimClock;
-        sf::Time lavaFrameDuration = sf::milliseconds(200); // 10 fps
+        sf::Time lavaFrameDuration = sf::milliseconds(200); // 5 fps
         int currentlavaframe = 0;
 
 
