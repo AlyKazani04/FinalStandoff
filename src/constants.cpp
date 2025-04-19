@@ -206,9 +206,9 @@ std::string filepath[3] = {
 // TImer Constants
 
 sf::Time timers[] = {
-    sf::seconds(90),
-    sf::seconds(90),
-    sf::seconds(150)
+    sf::seconds(60),
+    sf::seconds(60),
+    sf::seconds(90)
 };
 
 // Character Constants

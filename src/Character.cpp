@@ -16,294 +16,322 @@ sf::Texture& getGlobalTexture(){
 }
 
 class Character {
-private:
-    sf::Sprite sprite;
-    sf::Texture spriteSheet;
-    std::vector<sf::IntRect> idleFrontFrames;
-    std::vector<sf::IntRect> idleRightFrames;
-    std::vector<sf::IntRect> idleBackFrames;
-    std::vector<sf::IntRect> moveFrontFrames;
-    std::vector<sf::IntRect> moveRightFrames;
-    std::vector<sf::IntRect> moveBackFrames;
-    std::vector<sf::IntRect> attackFrontFrames;
-    std::vector<sf::IntRect> attackRightFrames;
-    std::vector<sf::IntRect> attackBackFrames;
-    std::vector<sf::IntRect> deathFrames;
-    sf::Clock clock;
-    sf::RectangleShape hitbox;
+    private:
+        sf::Sprite sprite;
+        sf::Texture spriteSheet;
+        std::vector<sf::IntRect> idleFrontFrames;
+        std::vector<sf::IntRect> idleRightFrames;
+        std::vector<sf::IntRect> idleBackFrames;
+        std::vector<sf::IntRect> moveFrontFrames;
+        std::vector<sf::IntRect> moveRightFrames;
+        std::vector<sf::IntRect> moveBackFrames;
+        std::vector<sf::IntRect> attackFrontFrames;
+        std::vector<sf::IntRect> attackRightFrames;
+        std::vector<sf::IntRect> attackBackFrames;
+        std::vector<sf::IntRect> deathFrames;
+        sf::Clock clock;
+        sf::RectangleShape hitbox;
 
-    sf::Time frameDuration; // in seconds, 0.2secs; 5fps
-    int currentFrame;
-    int currentAnimation;
-    int currentDirection;  // 0: front, 1: right, 2: back
-    bool isFacingRight;
-    int LevelNumber;
-    bool isDead = false;
-    bool isAttacking = false;
-    
-    float Health = MAX_HEALTH;
-    int Coins = 0;
-    float attackDamage = 20;
-public:
-    enum AnimationState {
-        IDLE = 0,
-        MOVE = 1,
-        ATTACK = 2,
-        DEATH = 3
-    };
-
-    enum Direction {
-        FRONT = 0,
-        RIGHT = 1,
-        BACK = 2
-    };
-
-    Character() : frameDuration(sf::seconds(0.1)), currentFrame(0), currentAnimation(IDLE), currentDirection(FRONT), isFacingRight(true),sprite(getGlobalTexture()) {}
-
-    void Load(int level){
-
-        LevelNumber = level;
-         // Load sprite sheet
-         if (!spriteSheet.loadFromFile("../resources/player.png")) {
-            std::cout << "Error loading player sprite sheet" << std::endl;
-            return;
-        } else{
-            std::cout << "Player sprite sheet loaded" << std::endl;
-        }
-        sprite.setTexture(spriteSheet);
-
-        // Setup idle animations (rows 0-2)
-        for (int i = 0; i < FRAMES_PER_ROW; i++) {
-            idleFrontFrames.push_back(sf::IntRect(sf::Vector2i(i * FRAME_WIDTH, 0), sf::Vector2i(FRAME_WIDTH, FRAME_HEIGHT)));
-            idleRightFrames.push_back(sf::IntRect(sf::Vector2i(i * FRAME_WIDTH, FRAME_HEIGHT), sf::Vector2i(FRAME_WIDTH, FRAME_HEIGHT)));
-            idleBackFrames.push_back(sf::IntRect(sf::Vector2i(i * FRAME_WIDTH, FRAME_HEIGHT * 2), sf::Vector2i(FRAME_WIDTH, FRAME_HEIGHT)));
-        }
-
-        // Setup move animations (rows 3-5)
-        for (int i = 0; i < FRAMES_PER_ROW; i++) {
-            moveFrontFrames.push_back(sf::IntRect(sf::Vector2i(i * FRAME_WIDTH, FRAME_HEIGHT * 3), sf::Vector2i(FRAME_WIDTH, FRAME_HEIGHT)));
-            moveRightFrames.push_back(sf::IntRect(sf::Vector2i(i * FRAME_WIDTH, FRAME_HEIGHT * 4), sf::Vector2i(FRAME_WIDTH, FRAME_HEIGHT)));
-            moveBackFrames.push_back(sf::IntRect(sf::Vector2i(i * FRAME_WIDTH, FRAME_HEIGHT * 5), sf::Vector2i(FRAME_WIDTH, FRAME_HEIGHT)));
-        }
-
-        // Setup attack animations (rows 6-8)
-        for (int i = 0; i < 4; i++) {
-            attackFrontFrames.push_back(sf::IntRect(sf::Vector2i(i * FRAME_WIDTH, FRAME_HEIGHT * 6), sf::Vector2i(FRAME_WIDTH, FRAME_HEIGHT)));
-            attackRightFrames.push_back(sf::IntRect(sf::Vector2i(i * FRAME_WIDTH, FRAME_HEIGHT * 7), sf::Vector2i(FRAME_WIDTH, FRAME_HEIGHT)));
-            attackBackFrames.push_back(sf::IntRect(sf::Vector2i(i * FRAME_WIDTH, FRAME_HEIGHT * 8), sf::Vector2i(FRAME_WIDTH, FRAME_HEIGHT)));
-        }
-
-        // Setup death animation (row 9)
-        for (int i = 0; i < 3; i++) {
-            deathFrames.push_back(sf::IntRect(sf::Vector2i(i * FRAME_WIDTH, FRAME_HEIGHT * 9), sf::Vector2i(FRAME_WIDTH, FRAME_HEIGHT)));
-        }
-        hitbox.setFillColor(sf::Color::Transparent);
-        hitbox.setOutlineColor(sf::Color::Red);
-        hitbox.setOutlineThickness(1.f);
+        // animation variables
+        sf::Time frameDuration = sf::seconds(0.1f); // in seconds, 0.1secs; 10fps
+        int currentFrame;
+        int currentAnimation;
+        int currentDirection;  // 0: front, 1: right, 2: back
+        bool isFacingRight;
+        bool isDead = false;
+        bool isAttacking = false;
         
+        int LevelNumber;
 
-        sprite.setOrigin(sf::Vector2f(FRAME_WIDTH/2, FRAME_HEIGHT/2));
-        sprite.setScale(sf::Vector2f(character_SCALE, character_SCALE));
-        sprite.setPosition(characterSpawns[LevelNumber]);
-
-        sf::Vector2f spritePos = sprite.getPosition();
+        // logic variables
+        float Health = MAX_HEALTH;
+        int Coins = 0;
+        const float attackDamage = 20;
+        bool KeyCollected = false;
+        bool movetonextlevel = false;
         
-        // Hitbox size (tune if needed)
-        float hbWidth = FRAME_WIDTH * character_SCALE * 0.3f;
-        float hbHeight = FRAME_HEIGHT * character_SCALE * 0.4f;
+    public:
+        enum AnimationState {
+            IDLE = 0,
+            MOVE = 1,
+            ATTACK = 2,
+            DEATH = 3
+        };
+
+        enum Direction {
+            FRONT = 0,
+            RIGHT = 1,
+            BACK = 2
+        };
         
-        // Position it centered at sprite position
-        float hitboxyoffset = 25.f;
-        hitbox.setSize({hbWidth, hbHeight});
-        hitbox.setOrigin({hbWidth / 2.f, hbHeight / 2.f});
-        hitbox.setPosition({spritePos.x, spritePos.y + hitboxyoffset});
+        Character() : currentFrame(0), currentAnimation(IDLE), currentDirection(FRONT), isFacingRight(true), sprite(getGlobalTexture()) {}
 
-    }
-    void update(float deltaTime, const std::vector<sf::FloatRect>& mapRects, Props prop) {
+        void Load(int level){
+            // initialize character variables
+            LevelNumber = level;
+            Health = MAX_HEALTH;
+            Coins = 0;
+            KeyCollected = false;
+            movetonextlevel = false;
 
-        if (isDead){
-            setAnimation(DEATH, lastDirection);
+
+            // Load sprite sheet
+            if (!spriteSheet.loadFromFile("../resources/player.png")) {
+                std::cout << "Error loading player sprite sheet" << std::endl;
+                return;
+            } else{
+                std::cout << "Player sprite sheet loaded" << std::endl;
+            }
+            sprite.setTexture(spriteSheet);
+
+            // Setup idle animations (rows 0-2)
+            for (int i = 0; i < FRAMES_PER_ROW; i++) {
+                idleFrontFrames.push_back(sf::IntRect(sf::Vector2i(i * FRAME_WIDTH, 0), sf::Vector2i(FRAME_WIDTH, FRAME_HEIGHT)));
+                idleRightFrames.push_back(sf::IntRect(sf::Vector2i(i * FRAME_WIDTH, FRAME_HEIGHT), sf::Vector2i(FRAME_WIDTH, FRAME_HEIGHT)));
+                idleBackFrames.push_back(sf::IntRect(sf::Vector2i(i * FRAME_WIDTH, FRAME_HEIGHT * 2), sf::Vector2i(FRAME_WIDTH, FRAME_HEIGHT)));
+            }
+
+            // Setup move animations (rows 3-5)
+            for (int i = 0; i < FRAMES_PER_ROW; i++) {
+                moveFrontFrames.push_back(sf::IntRect(sf::Vector2i(i * FRAME_WIDTH, FRAME_HEIGHT * 3), sf::Vector2i(FRAME_WIDTH, FRAME_HEIGHT)));
+                moveRightFrames.push_back(sf::IntRect(sf::Vector2i(i * FRAME_WIDTH, FRAME_HEIGHT * 4), sf::Vector2i(FRAME_WIDTH, FRAME_HEIGHT)));
+                moveBackFrames.push_back(sf::IntRect(sf::Vector2i(i * FRAME_WIDTH, FRAME_HEIGHT * 5), sf::Vector2i(FRAME_WIDTH, FRAME_HEIGHT)));
+            }
+
+            // Setup attack animations (rows 6-8)
+            for (int i = 0; i < 4; i++) {
+                attackFrontFrames.push_back(sf::IntRect(sf::Vector2i(i * FRAME_WIDTH, FRAME_HEIGHT * 6), sf::Vector2i(FRAME_WIDTH, FRAME_HEIGHT)));
+                attackRightFrames.push_back(sf::IntRect(sf::Vector2i(i * FRAME_WIDTH, FRAME_HEIGHT * 7), sf::Vector2i(FRAME_WIDTH, FRAME_HEIGHT)));
+                attackBackFrames.push_back(sf::IntRect(sf::Vector2i(i * FRAME_WIDTH, FRAME_HEIGHT * 8), sf::Vector2i(FRAME_WIDTH, FRAME_HEIGHT)));
+            }
+
+            // Setup death animation (row 9)
+            for (int i = 0; i < 3; i++) {
+                deathFrames.push_back(sf::IntRect(sf::Vector2i(i * FRAME_WIDTH, FRAME_HEIGHT * 9), sf::Vector2i(FRAME_WIDTH, FRAME_HEIGHT)));
+            }
+            hitbox.setFillColor(sf::Color::Transparent);
+            hitbox.setOutlineColor(sf::Color::Red);
+            hitbox.setOutlineThickness(1.f);
+            
+
+            sprite.setOrigin(sf::Vector2f(FRAME_WIDTH/2, FRAME_HEIGHT/2));
+            sprite.setScale(sf::Vector2f(character_SCALE, character_SCALE));
+            sprite.setPosition(characterSpawns[LevelNumber]);
+
+            sf::Vector2f spritePos = sprite.getPosition();
+            
+            
+            float hbWidth = FRAME_WIDTH * character_SCALE * 0.3f;
+            float hbHeight = FRAME_HEIGHT * character_SCALE * 0.4f;
+            
+            // Position it centered at sprite position
+            float hitboxyoffset = 25.f;
+            hitbox.setSize({hbWidth, hbHeight});
+            hitbox.setOrigin({hbWidth / 2.f, hbHeight / 2.f});
+            hitbox.setPosition({spritePos.x, spritePos.y + hitboxyoffset});
+
         }
+        void update(float deltaTime, const std::vector<sf::FloatRect>& mapRects, Props& prop) {
 
-        if (clock.getElapsedTime() > frameDuration) {
-            std::vector<sf::IntRect>& currentFrames = getCurrentAnimationFrames();
+            if (isDead){
+                setAnimation(DEATH, lastDirection);
+            }
 
-            if(isDead && currentAnimation == DEATH){
-                if(currentFrame < currentFrames.size() - 1){
-                    currentFrame++;
+            if (clock.getElapsedTime() > frameDuration) {
+                std::vector<sf::IntRect>& currentFrames = getCurrentAnimationFrames();
+
+                if(isDead && currentAnimation == DEATH){
+                    if(currentFrame < currentFrames.size() - 1){
+                        currentFrame++;
+                    }
+                    // 
                 }
-                // 
-            }
-            else{
-                currentFrame = (currentFrame + 1) % FRAMES_PER_ROW;
-            }
-            clock.restart();
-        }
-
-
-        sf::Vector2f movement = {0 , 0};
-        float speed = 200.f;
-
-        const std::vector<sf::FloatRect> propRects = prop.GetPropCollisionRects();
-
-        if (!isDead) {
-
-            // Handle movement
-            //Handle death on L key press
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::L)) {
-                setAnimation(DEATH, RIGHT);
-                isDead = true;
-            }
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::A)) {
-                movement = {-speed * deltaTime, 0.f};
-                lastDirection = RIGHT;
-            }
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::D)) {
-                movement = {speed * deltaTime, 0.f};
-                lastDirection = RIGHT;
-            }
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::W)) {
-                movement = {0.f, -speed * deltaTime};
-                lastDirection = BACK;
-            }
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::S)) {
-                movement = {0.f, speed * deltaTime};
-                lastDirection = FRONT;
-            }
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Space)) {
-                isAttacking = true;
-            }
-
-            sf::FloatRect nexthitbox = hitbox.getGlobalBounds();
-            nexthitbox.position.x += movement.x;
-            nexthitbox.position.y += movement.y;
-
-            bool blocked = false;
-            for(const auto& rect : mapRects) {
-                if(nexthitbox.findIntersection(rect)) {
-                    blocked = true;
-                    break;
+                else{
+                    currentFrame = (currentFrame + 1) % FRAMES_PER_ROW;
                 }
+                clock.restart();
             }
-            bool propinteract = false;
-            if(!blocked){
-                for(const auto& rect : propRects) {
-                    if(nexthitbox.findIntersection(rect)){
-                        if(prop.getPropID(rect.position.x/TILE_SIZE/SCALE, rect.position.y/TILE_SIZE/SCALE) == 24){ // check if its a coin
-                            prop.collectCoin(rect.position.x/TILE_SIZE/SCALE, rect.position.y/TILE_SIZE/SCALE);
-                            ++Coins;
-                            std::cout << "Coin count: " << Coins << std::endl;
-                        }
+
+
+            sf::Vector2f movement = {0 , 0};
+            float speed = 200.f;
+
+            const std::vector<sf::FloatRect> propRects = prop.GetPropCollisionRects();
+
+            if (!isDead) {
+
+                // Handle movement
+                //Handle death on L key press
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::L) || Health <= 0) {
+                    setAnimation(DEATH, RIGHT);
+                    isDead = true;
+                }
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::A)) {
+                    movement = {-speed * deltaTime, 0.f};
+                    lastDirection = RIGHT;
+                }
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::D)) {
+                    movement = {speed * deltaTime, 0.f};
+                    lastDirection = RIGHT;
+                }
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::W)) {
+                    movement = {0.f, -speed * deltaTime};
+                    lastDirection = BACK;
+                }
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::S)) {
+                    movement = {0.f, speed * deltaTime};
+                    lastDirection = FRONT;
+                }
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Space)) {
+                    isAttacking = true;
+                }
+
+                sf::FloatRect nexthitbox = hitbox.getGlobalBounds();
+                nexthitbox.position.x += movement.x;
+                nexthitbox.position.y += movement.y;
+
+                bool blocked = false;
+                for(const auto& rect : mapRects) {
+                    if(nexthitbox.findIntersection(rect)) {
+                        blocked = true;
                         break;
                     }
                 }
-            }
-            if (movement != sf::Vector2f{0.f, 0.f}) {
-                if(isAttacking == true){
-                    setAnimation(ATTACK, lastDirection);
-                    setLastDirection(lastDirection);
-                } else if(!blocked){
-                    move(movement.x, movement.y);
-                    setAnimation(MOVE, lastDirection);
-                    setLastDirection(lastDirection);
+                if(!blocked){
+                    for(const auto& rect : propRects) {
+                        if(nexthitbox.findIntersection(rect)){
+                            int tileX = rect.position.x / TILE_SIZE / SCALE;
+                            int tileY = rect.position.y / TILE_SIZE / SCALE;
+                            int propID = prop.getPropID(tileX, tileY);
+
+                            std::cout<<"Collision"<<std::endl;
+                            if(propID == 24){ // check if its a coin
+                                prop.collectTile(tileX, tileY);
+                                ++Coins;
+                            }
+                            if(propID == 31){ // check if its a key
+                                prop.collectTile(tileX, tileY);
+                                KeyCollected = true;
+                            }
+                            if(prop.isDoor(rect) && KeyCollected == true){ // check if its a door and whether the key has been collected, also check if enemies are dead(todo)
+                                movetonextlevel = true;
+                            }
+                            break;
+                        }
+                    }
                 }
-            } else {
-                if(isAttacking == true){
-                    setAnimation(ATTACK, lastDirection);
-                    setLastDirection(lastDirection);
-                } else{
-                    setAnimation(IDLE, getLastDirection());
+                if (movement != sf::Vector2f{0.f, 0.f}) {
+                    if(isAttacking == true){
+                        setAnimation(ATTACK, lastDirection);
+                        setLastDirection(lastDirection);
+                    } else if(!blocked){
+                        move(movement.x, movement.y);
+                        setAnimation(MOVE, lastDirection);
+                        setLastDirection(lastDirection);
+                    }
+                } else {
+                    if(isAttacking == true){
+                        setAnimation(ATTACK, lastDirection);
+                        setLastDirection(lastDirection);
+                    } else{
+                        setAnimation(IDLE, getLastDirection());
+                    }
                 }
             }
-        }
 
-
-        std::vector<sf::IntRect>& currentFrames = getCurrentAnimationFrames();
-        
-        sprite.setTextureRect(currentFrames[static_cast<int>(currentFrame) % currentFrames.size()]);
-
-        if(isAttacking == true && currentAnimation == ATTACK && currentFrame >= currentFrames.size() - 1){
-            isAttacking = false;
-        }
-    }
-
-    void setAnimation(AnimationState animation, Direction direction) {
-        if (animation != currentAnimation || direction != currentDirection) {
-            currentAnimation = animation;
-            currentDirection = direction;
+            std::vector<sf::IntRect>& currentFrames = getCurrentAnimationFrames();
             
-            currentFrame = 0;
-        }
-    }
+            sprite.setTextureRect(currentFrames[static_cast<int>(currentFrame) % currentFrames.size()]);
 
-    void move(float x, float y) {
-        sprite.move(sf::Vector2f(x, y));
-        hitbox.move(sf::Vector2f(x,y));
+            if(isAttacking == true && currentAnimation == ATTACK && currentFrame >= currentFrames.size() - 1){
+                isAttacking = false;
+            }
+        }
+
+        void setAnimation(AnimationState animation, Direction direction) {
+            if (animation != currentAnimation || direction != currentDirection) {
+                currentAnimation = animation;
+                currentDirection = direction;
+                
+                currentFrame = 0;
+            }
+        }
+
+        void move(float x, float y) {
+            sprite.move(sf::Vector2f(x, y));
+            hitbox.move(sf::Vector2f(x,y));
+            
+            // Update direction based on movement
+            if (x > 0) {
+                setAnimation(MOVE, RIGHT);
+                isFacingRight = true;
+            } else if (x < 0) {
+                setAnimation(MOVE, RIGHT);
+                isFacingRight = false;
+            } else if (y < 0) {
+                setAnimation(MOVE, BACK);
+            } else if (y > 0) {
+                setAnimation(MOVE, FRONT);
+            }
+            sprite.setScale(isFacingRight ? sf::Vector2f(character_SCALE,character_SCALE) : sf::Vector2f(-character_SCALE, character_SCALE));
+        }
+
+        void draw(sf::RenderWindow& window) {
+            window.draw(sprite);
+            window.draw(hitbox);
+        }
+
+        sf::FloatRect getBounds() const {
+            return sprite.getGlobalBounds();
+        }
+
+        sf::FloatRect getHitboxBounds() const{
+            return hitbox.getGlobalBounds();
+        }
         
-        // Update direction based on movement
-        if (x > 0) {
-            setAnimation(MOVE, RIGHT);
-            isFacingRight = true;
-        } else if (x < 0) {
-            setAnimation(MOVE, RIGHT);
-            isFacingRight = false;
-        } else if (y < 0) {
-            setAnimation(MOVE, BACK);
-        } else if (y > 0) {
-            setAnimation(MOVE, FRONT);
+        sf::Vector2f getPosition() const {
+            return sprite.getPosition();
         }
-        sprite.setScale(isFacingRight ? sf::Vector2f(character_SCALE,character_SCALE) : sf::Vector2f(-character_SCALE, character_SCALE));
-    }
-
-    void draw(sf::RenderWindow& window) {
-        window.draw(sprite);
-        window.draw(hitbox);
-    }
-
-    sf::FloatRect getBounds() const {
-        return sprite.getGlobalBounds();
-    }
-
-    sf::FloatRect getHitboxBounds() const{
-        return hitbox.getGlobalBounds();
-    }
-    
-    sf::Vector2f getPosition() const {
-        return sprite.getPosition();
-    }
-    void setLastDirection(Direction dir){
-        lastDirection = dir;
-    }
-    Direction getLastDirection() const{
-        return lastDirection;
-    }
-
-private:
-    std::vector<sf::IntRect>& getCurrentAnimationFrames() {
-        switch (currentAnimation) {
-            case IDLE:
-                switch (currentDirection) {
-                    case FRONT: return idleFrontFrames;
-                    case RIGHT: return idleRightFrames;
-                    case BACK: return idleBackFrames;
-                }
-            case MOVE:
-                switch (currentDirection) {
-                    case FRONT: return moveFrontFrames;
-                    case RIGHT: return moveRightFrames;
-                    case BACK: return moveBackFrames;
-                }
-            case ATTACK:
-                switch (currentDirection) {
-                    case FRONT: return attackFrontFrames;
-                    case RIGHT: return attackRightFrames;
-                    case BACK: return attackBackFrames;
-                }
-            case DEATH:
-                return deathFrames;
+        void setLastDirection(Direction dir){
+            lastDirection = dir;
         }
-        return idleFrontFrames; // default case
-    }
-    Direction lastDirection = FRONT; // store last direction
+        Direction getLastDirection() const{
+            return lastDirection;
+        }
+
+        bool isPlayerDead(){
+            return isDead;
+        }
+        bool movetoNextLevel(){
+            return movetonextlevel;
+        }
+
+    private:
+        std::vector<sf::IntRect>& getCurrentAnimationFrames() {
+            switch (currentAnimation) {
+                case IDLE:
+                    switch (currentDirection) {
+                        case FRONT: return idleFrontFrames;
+                        case RIGHT: return idleRightFrames;
+                        case BACK: return idleBackFrames;
+                    }
+                case MOVE:
+                    switch (currentDirection) {
+                        case FRONT: return moveFrontFrames;
+                        case RIGHT: return moveRightFrames;
+                        case BACK: return moveBackFrames;
+                    }
+                case ATTACK:
+                    switch (currentDirection) {
+                        case FRONT: return attackFrontFrames;
+                        case RIGHT: return attackRightFrames;
+                        case BACK: return attackBackFrames;
+                    }
+                case DEATH:
+                    return deathFrames;
+            }
+            return idleFrontFrames; // default case
+        }
+        Direction lastDirection = FRONT; // store last direction
 };
 

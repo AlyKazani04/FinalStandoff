@@ -13,7 +13,6 @@ class Timer{
     public:
         Timer() : levelNumber(0){
             totalTime = timers[levelNumber].asSeconds();
-            
         }
         void LoadTimer(sf::RenderWindow& window,int level){
             clock.restart();
@@ -61,26 +60,3 @@ class Timer{
         }
 
 };
-
-// int main() {
-//     sf::RenderWindow window(sf::VideoMode({800, 600}), "Timer Example");
-
-//     Timer timer;
-//     timer.LoadTimer(window, 0); // load level 0 timer
-
-//     while (window.isOpen()) {
-        
-//         while (std::optional event = window.pollEvent()) {
-//             if (event->is<sf::Event::Closed>())
-//                 window.close();
-//         }
-
-//         timer.update(window);
-
-//         window.clear();
-//         timer.render(window); // draw the timer
-//         window.display();
-//     }
-
-//     return 0;
-// }

@@ -12,7 +12,7 @@ enum GameScreen{MENU, LEVEL1, LEVEL2, LEVEL3, DEATHMATCH, PAUSE, GAMEOVER, CREDI
 int main(){
 
     // INITIALIZE GAME
-    GameScreen currentScreen = MENU; // Show Menu first
+    GameScreen currentScreen = LEVEL1; // Show Menu first
     Floor floor;
     Map map;
     Props prop;
@@ -21,7 +21,7 @@ int main(){
     Timer timer;
     sf::Clock clock;
 
-    int LevelNumber = 1;
+    int LevelNumber = 0;
     bool isFullScreen = true;
 
     createWindow(isFullScreen); // Create window in fullscreen mode
@@ -56,27 +56,140 @@ int main(){
             }
         }
         
-        // UPDATE
-        float deltaTime = clock.restart().asSeconds(); // get the time since last frame in seconds
-        timer.update(window);
-        if(timer.isTimeUp()){
-            timer.reset();
+        { // UPDATE
+            switch(currentScreen){
+                case MENU:
+                    // if(){
+                    //     currentScreen = LEVEL1;
+                    // }
+                    // break;
+                case LEVEL1:
+                    if(player.movetoNextLevel() == false){
+                        float deltaTime = clock.restart().asSeconds(); // get the time since last frame in seconds
+                        timer.update(window);
+                        if(timer.isTimeUp()){
+                            timer.reset();
+                        }
+                        player.update(deltaTime, map.GetMapCollisionRects(), prop);
+
+                        if(player.isPlayerDead() || timer.isTimeUp()){
+                            currentScreen = GAMEOVER;
+                        }
+                    } else{
+                        LevelNumber = 1;
+                        bgm.stop();
+                        floor.LoadFloor(LevelNumber);       
+                        map.LoadMap(LevelNumber);           
+                        prop.LoadProps(LevelNumber);        
+                        bgm.LoadMusic(LevelNumber);         
+                        timer.LoadTimer(window, LevelNumber);
+                        player.Load(LevelNumber);
+                        bgm.play();
+                        currentScreen = LEVEL2;
+                    }
+                    break;
+                case LEVEL2:
+                    if(player.movetoNextLevel() == false){
+                        float deltaTime = clock.restart().asSeconds(); // get the time since last frame in seconds
+                        timer.update(window);
+                        if(timer.isTimeUp()){
+                            timer.reset();
+                        }
+                        player.update(deltaTime, map.GetMapCollisionRects(), prop);
+
+                        if(player.isPlayerDead() || timer.isTimeUp()){
+                            currentScreen = GAMEOVER;
+                        }
+                    } else{
+                        LevelNumber = 2;
+                        bgm.stop();
+                        floor.LoadFloor(LevelNumber);       
+                        map.LoadMap(LevelNumber);           
+                        prop.LoadProps(LevelNumber);        
+                        bgm.LoadMusic(LevelNumber);         
+                        timer.LoadTimer(window, LevelNumber);
+                        player.Load(LevelNumber);
+                        bgm.play();
+                        currentScreen = LEVEL3;
+                    }
+                    break;
+                case LEVEL3:
+                    if(player.movetoNextLevel() == false){
+                        float deltaTime = clock.restart().asSeconds(); // get the time since last frame in seconds
+                        timer.update(window);
+                        if(timer.isTimeUp()){
+                            timer.reset();
+                        }
+                        player.update(deltaTime, map.GetMapCollisionRects(), prop);
+
+                        if(player.isPlayerDead() || timer.isTimeUp()){
+                            currentScreen = GAMEOVER;
+                        }
+                    } else{
+                        LevelNumber = 0;
+                        bgm.stop();
+                        floor.LoadFloor(LevelNumber);       
+                        map.LoadMap(LevelNumber);           
+                        prop.LoadProps(LevelNumber);        
+                        bgm.LoadMusic(LevelNumber);         
+                        timer.LoadTimer(window, LevelNumber);
+                        player.Load(LevelNumber);
+                        bgm.play();
+                        currentScreen = LEVEL1;
+                    }
+                    break;
+                case PAUSE:
+                    break;
+                case GAMEOVER:
+                    break;
+                case CREDITS:
+                    break; 
+            }
+            
         }
-        player.update(deltaTime, map.GetMapCollisionRects(), prop);
         
-        
-        // DRAW
-        window.clear();     // clearing the window each frame
+        {// DRAW
+            window.clear();     // clearing the window each frame
+            switch(currentScreen){
+                case MENU: // draw menu stuff here
 
-        floor.Render(window); // rendering the level
-        map.Render(window); // rendering the map
-        prop.Render(window); // rendering the props
-        timer.render(window); // render the timer
-        player.draw(window); // rendering the player
-        
+                    break;
+                case LEVEL1:
 
-        window.display();   // displaying the window (important)
+                    floor.Render(window); // rendering the level
+                    map.Render(window); // rendering the map
+                    prop.Render(window); // rendering the props
+                    timer.render(window); // render the timer
+                    player.draw(window); // rendering the player
+                    break;
+                case LEVEL2:
 
+                    floor.Render(window); // rendering the level
+                    map.Render(window); // rendering the map
+                    prop.Render(window); // rendering the props
+                    timer.render(window); // render the timer
+                    player.draw(window); // rendering the player
+                    break;
+                case LEVEL3:
+
+                    floor.Render(window); // rendering the level
+                    map.Render(window); // rendering the map
+                    prop.Render(window); // rendering the props
+                    timer.render(window); // render the timer
+                    player.draw(window); // rendering the player
+                    break;
+                case PAUSE:
+                    break;
+                case GAMEOVER:
+                    break;
+                case CREDITS:
+                    break; 
+                default:
+                    window.close();
+                    return 0;
+            }
+            window.display();   // displaying the window (important)
+        }
 
         // DEINITIALIZE (LOOP), if needed
 

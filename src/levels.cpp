@@ -9,18 +9,26 @@ class Props{
         int (*currentProps)[LEVEL_WIDTH]; // Pointer to the prop layout
         sf::FloatRect propsprites[LEVEL_WIDTH][LEVEL_HEIGHT] = {sf::FloatRect({0,0},{TILE_SIZE, TILE_SIZE})}; // for each props, size and position, to calc collision 
         int LevelNumber;
+        sf::RectangleShape door_hitbox;
+
     public:
         Props() : LevelNumber(0) {
             currentProps = PROPS[0];
         }
         bool isCollidable(int tile) const{
-            return tile == 24 || tile == 31 || tile == 26;
+            return tile == 24 || tile == 31 || tile == 26; // return a coin, key or a door
         }
         int getPropID(int x, int y) const{ // returns the prop id at the given position
             return currentProps[y][x];
         }
-        void collectCoin(int x, int y){ // sets coin to an empty tile
+        void collectTile(int x, int y){ // sets tile to an empty tile
             currentProps[y][x] = 0;
+        }
+        bool isDoor(sf::FloatRect rect) const{
+            if(door_hitbox.getGlobalBounds().findIntersection(rect)){
+                return true;
+            }
+            return false;
         }
         std::vector<sf::FloatRect> GetPropCollisionRects() const {
             std::vector<sf::FloatRect> collidables;
@@ -31,6 +39,7 @@ class Props{
                     }
                 }
             }
+            collidables.push_back(door_hitbox.getGlobalBounds()); // add door hitbox to the list of collidable rects 
             return collidables;
         }       
 
@@ -100,15 +109,23 @@ class Props{
                         }
                          else{
                             if(PROPS[LevelNumber][y][x] == 26){ // door
+
+                                door_hitbox.setFillColor(sf::Color::Transparent);
+                                door_hitbox.setOutlineColor(sf::Color::Red);
+                                door_hitbox.setOutlineThickness(1.f);
+
                                 // calculate prop sprite used from tile set
                                 int proptileX = (proptile % maptilesetColumns) * TILE_SIZE;
                                 int proptileY = (proptile / maptilesetColumns) * TILE_SIZE;
-
+                                
+                                
                                 sf::IntRect proptilerect({proptileX, proptileY}, {TILE_SIZE, TILE_SIZE});
-
+                                
                                 tempSprite.setTextureRect(proptilerect);
                                 tempSprite.setScale({SCALE, SCALE-1});
-
+                                door_hitbox.setSize({TILE_SIZE, TILE_SIZE});
+                                door_hitbox.setScale({SCALE, SCALE-1});
+                                
                                 float deviation = 0;
                                 if(LevelNumber == 2){ // move all prop tiles in level 2 slightly to the left 
                                     deviation = 7;
@@ -116,8 +133,11 @@ class Props{
 
                                 float posx = x * TILE_SIZE * SCALE + (TILE_SIZE * SCALE) - deviation;
                                 float posy = y * TILE_SIZE * (SCALE + 1);
+                                
+                                tempSprite.setPosition({posx, posy});
+                                int offsety = 5; // offset to make door hitbox stickout from the wall
+                                door_hitbox.setPosition({posx, posy + offsety});
 
-                                tempSprite.setPosition(sf::Vector2f(posx, posy));
                             } else{ // for a collidable prop
                                 // calculate prop sprite used from tile set
                                 int proptileX = (proptile % maptilesetColumns) * TILE_SIZE;
@@ -147,6 +167,9 @@ class Props{
                     } else{ continue; }
 
                     window.draw(tempSprite);
+                    if(getPropID(x, y) == 26){
+                        window.draw(door_hitbox);
+                    } 
                 }
             }            
         }
