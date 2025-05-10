@@ -15,6 +15,7 @@ void createWindow(bool fullscreen) {
 
     // Set view if needed
     sf::View view(sf::FloatRect(sf::Vector2f(0, 0), baseresolutionbutfloat));
+    
     view.setViewport(sf::FloatRect({0.f, 0.f}, {1.f, 1.f})); // Stretch
     window.setView(view);
 }
