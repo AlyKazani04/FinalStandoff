@@ -45,7 +45,7 @@ public:
 
     bool update(float deltaTime) {
         sf::Vector2f position = text.getPosition();
-        position.y -= (speed * 0.5) * deltaTime;
+        position.y -= (speed * 0.5f) * deltaTime;
         text.setPosition(position);
         // std::cout<<"Time: "<<clock.getElapsedTime().asSeconds()<<"seconds"<<std::endl;  // debugging viewing time
         if (clock.getElapsedTime().asSeconds() > 38.5f){

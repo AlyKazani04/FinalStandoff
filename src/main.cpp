@@ -10,24 +10,27 @@
 #include "ScreenManager.cpp"
 #include "Crawl.cpp"
 #include "Credits.cpp"
+#include "Instructions.cpp"
+#include "GameOver.cpp"
 
-enum GameScreen{NARRATIVE, MENU, LEVEL1, LEVEL2, LEVEL3, DEATHMATCH, PAUSE, GAMEOVER, CREDITS};
+enum GameScreen{NARRATIVE, MENU, INSTRUCTIONS, LEVEL1, LEVEL2, LEVEL3, DEATHMATCH, PAUSE, GAMEOVER, CREDITS};
 
 int main(){
 
     // INITIALIZE GAME
-    GameScreen currentScreen = NARRATIVE; // Show OpeningCrawl first
+    GameScreen currentScreen = MENU; // Show OpeningCrawl first
     GameScreen prevScreen = currentScreen;
     Floor floor;
     Map map;
     Prop prop;
     Character player;
-    Character player2; // for deathmatch
     MenuMusic menubgm;
     BackGroundMusic bgm;
     Timer timer;
     sf::Clock clock;
     std::vector<Enemy> Enemies;
+    sf::Clock inputCooldown;
+    bool inputBlocked = false;
     
     int LevelNumber = 0;
     bool isFullScreen = true;
@@ -36,24 +39,17 @@ int main(){
     createWindow(isFullScreen); // Create window in fullscreen mode
     OpeningCrawl crawl(window);
     CreditsCrawl credits(window);
+    Instructions instructions(window);
+    GameOver gameOver(window);
     ScreenManager screenHandle;
     screenHandle.initialize(window);
     
     window.setFramerateLimit(60);  // Max FrameRate set to 60 
-    int framecounter = 0;
     menubgm.LoadMusic();
     menubgm.play();
-    sf::RectangleShape testenemyspawn;
-    testenemyspawn.setSize(EnemySpawns[2][0].size);
-    testenemyspawn.setFillColor(sf::Color::Blue);
-    testenemyspawn.setPosition(EnemySpawns[2][0].position);
-
-    std::cout<<"Size: "<<testenemyspawn.getSize().x<<", "<<testenemyspawn.getSize().y<<std::endl;
-    std::cout<<"Position: "<<testenemyspawn.getPosition().x<<", "<<testenemyspawn.getPosition().y<<std::endl;
 
     while (window.isOpen()){
         // INITIALIZE (LOOP)
-        framecounter++; // count frames...
         while (const std::optional event = window.pollEvent()){
             if (event->is<sf::Event::Closed>()){ 
                 bgm.stop(); // stop the music
@@ -93,9 +89,24 @@ int main(){
                     break;
                 case MENU: // process menu events here
                 {
+                    prevScreen = MENU;
+                    if (inputBlocked && inputCooldown.getElapsedTime().asSeconds() < 0.3f)
+                        break; // Skip handling input if cooldown is active
+                    inputBlocked = false; // Reset after cooldown passes
+
                     bool startgame = false, exitgame = false;
                     screenHandle.handleStartScreenInput(window, startgame, exitgame);
                     if(startgame){
+                        instructions.instructionClockRestart();
+                        currentScreen = INSTRUCTIONS;
+                    } else if(exitgame){
+                        window.close();
+                    }  
+                }
+                break;
+                case INSTRUCTIONS:
+                {
+                    if(instructions.update()){
                         menubgm.stop();
                         floor.Load(LevelNumber);       // Levels
                         map.Load(LevelNumber);            // Walls
@@ -105,11 +116,9 @@ int main(){
                         player.Load(LevelNumber);                // Player
                         Enemies = spawnEnemiesForLevel(LevelNumber, map.GetMapCollisionRects()); // Enemies
 
-                        bgm.play();
                         currentScreen = LEVEL1;
-                    } else if(exitgame){
-                        window.close();
-                    }  
+                        bgm.play();                        
+                    }
                 }
                     break;
                 case LEVEL1:
@@ -124,7 +133,8 @@ int main(){
                         if(player.isPlayerDead() || timer.isTimeUp()){
                             Enemies.clear();
                             bgm.stop();
-                            // load gameover screen here
+                            menubgm.play();
+                            gameOver.saveCoins(player.getCoinCount());
                             currentScreen = GAMEOVER;
                         }
                     } else{
@@ -136,6 +146,7 @@ int main(){
                         player.Load(LevelNumber);
                         Enemies.clear();
                         Enemies = spawnEnemiesForLevel(LevelNumber, map.GetMapCollisionRects());
+                        gameOver.saveCoins(player.getCoinCount());
                         currentScreen = LEVEL2;
                     }
                     break;
@@ -150,7 +161,8 @@ int main(){
                         if(player.isPlayerDead() || timer.isTimeUp()){
                             Enemies.clear();
                             bgm.stop();
-                            // load gameover screen here
+                            menubgm.play();
+                            gameOver.saveCoins(player.getCoinCount());
                             currentScreen = GAMEOVER;
                         }
                     } else{
@@ -164,6 +176,7 @@ int main(){
                         player.Load(LevelNumber);
                         Enemies.clear();
                         Enemies = spawnEnemiesForLevel(LevelNumber, map.GetMapCollisionRects());
+                        gameOver.saveCoins(player.getCoinCount());
                         bgm.play();
                         currentScreen = LEVEL3;
                     }
@@ -179,13 +192,15 @@ int main(){
                         if(player.isPlayerDead() || timer.isTimeUp() ){
                             Enemies.clear();
                             bgm.stop();
-                            // load gameover screen here
+                            menubgm.play();
+                            gameOver.saveCoins(player.getCoinCount());
                             currentScreen = GAMEOVER;
                         }
                     } else{
                         LevelNumber = 0;
                         bgm.stop();
                         menubgm.play();
+                        credits.creditsClockRestart();
                         currentScreen = CREDITS;
                     }
                     break;
@@ -200,8 +215,11 @@ int main(){
                     } else if(exitgame){
                         Enemies.clear();
                         bgm.stop();
-                        isPause = false;
                         menubgm.play();
+
+                        inputBlocked = true; // block input for a small time to prevent multiple calls to exit
+                        inputCooldown.restart();
+                        isPause = false;
                         currentScreen = MENU;
                         prevScreen = MENU;
                     }
@@ -210,6 +228,12 @@ int main(){
                 case DEATHMATCH: // optional at this point
                     break;
                 case GAMEOVER:
+                    if(gameOver.update(window)){
+                        inputBlocked = true; // block input for a small time to prevent multiple calls to exit
+                        inputCooldown.restart();
+                        currentScreen = MENU;
+                        prevScreen = MENU;
+                    }                
                     break;
                 case CREDITS:
                     if(credits.update(clock.restart().asSeconds())){
@@ -235,6 +259,9 @@ int main(){
                 case MENU: // draw menu stuff here
                     screenHandle.renderStartScreen(window);
                     break;
+                case INSTRUCTIONS:
+                    instructions.draw();
+                    break;
                 case LEVEL1:
                     floor.Render(window); // rendering the level
                     map.Render(window); // rendering the map
@@ -264,7 +291,6 @@ int main(){
                     for (auto& enemy : Enemies) { // rendering enemies
                         enemy.draw(window);
                     }
-                    window.draw(testenemyspawn);
                     break;
                 case PAUSE:
                     if(prevScreen == LEVEL1 || prevScreen == LEVEL2 || prevScreen == LEVEL3) {
@@ -273,19 +299,21 @@ int main(){
                         prop.Render(window); // rendering the props
                         timer.render(window); // render the timer
                         player.draw(window); // rendering the player
+                        for (auto& enemy : Enemies) { // rendering enemies
+                            enemy.draw(window);
+                        }
                     }
                     screenHandle.renderPauseScreen(window);
                     break;
                 case DEATHMATCH:
                     break;
                 case GAMEOVER:
+                    gameOver.draw(window);
                     break;
                 case CREDITS:
                     credits.draw();
                     break; 
             }
-            testenemyspawn.setOutlineColor(sf::Color::Red);
-            testenemyspawn.setOutlineThickness(2.f);
             window.display();   // displaying the window (important)
         }
 

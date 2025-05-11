@@ -33,12 +33,10 @@ class Character {
         sf::SoundBuffer deathBuffer;
         std::vector<sf::SoundBuffer> walkBuffers;
         std::vector<sf::SoundBuffer> damageBuffers;
-        std::vector<sf::SoundBuffer> enemyDamageBuffers;
         std::vector<sf::Sound> attackSound;
         std::vector<sf::Sound> deathSound;
         std::vector<sf::Sound> walkSound;
         std::vector<sf::Sound> damageSound;
-        std::vector<sf::Sound> enemyDamageSound;
         sf::Clock walkSoundClock;
         sf::Time walkSoundCooldown = sf::milliseconds(300);
         int lastWalkSoundIndex = -1;
@@ -69,6 +67,9 @@ class Character {
         sf::Color spritecolor;
         sf::Clock damageCooldownClock;
         sf::Time damageCooldown = sf::milliseconds(500); // 0.5 second invulnerability after hit
+        sf::Text doorClosedText;
+        sf::Font font;
+
         
     public:
         enum AnimationState {
@@ -84,7 +85,7 @@ class Character {
             BACK = 2
         };
         
-        Character() : currentFrame(0), currentAnimation(IDLE), currentDirection(FRONT), isFacingRight(true), sprite(getGlobalTexture()) {
+        Character() : currentFrame(0), currentAnimation(IDLE), currentDirection(FRONT), isFacingRight(true), sprite(getGlobalTexture()), doorClosedText(font) {
             move(-100,-100);
         }
         
@@ -102,6 +103,7 @@ class Character {
             currentDirection = FRONT;
             isFacingRight = true;
             lastDirection = FRONT;
+            spritecolor = sf::Color::Transparent;
 
             // initialize health bar
             healthBarBackground.setSize(sf::Vector2f(300, 20 ));
@@ -120,8 +122,6 @@ class Character {
             walkBuffers.resize(3);
             damageBuffers.resize(3);
             damageSound.clear();
-            enemyDamageBuffers.resize(3);
-            enemyDamageSound.clear();
             walkSound.clear();
             deathSound.clear();
             
@@ -144,12 +144,7 @@ class Character {
                     damageSound.emplace_back(damageBuffers[i]);
                 }
             }
-            for (int i = 0; i < 3; ++i) {
-                std::string path = "../resources/Minifantasy_Dungeon_SFX/21_orc_damage_" + std::to_string(i + 1) + ".wav";
-                if (enemyDamageBuffers[i].loadFromFile(path)) {
-                    enemyDamageSound.emplace_back(enemyDamageBuffers[i]);
-                }
-            }
+            
             if(deathBuffer.loadFromFile("../resources/Minifantasy_Dungeon_SFX/14_human_death_spin.wav")){
                 deathSound.emplace_back(deathBuffer);
                 deathSound[0].setVolume(20);
@@ -168,10 +163,7 @@ class Character {
                 damageSound[i].setBuffer(damageBuffers[i]);
                 damageSound[i].setVolume(50);
             }
-            for (int i = 0; i < 3; i++) {
-                enemyDamageSound[i].setBuffer(enemyDamageBuffers[i]);
-                enemyDamageSound[i].setVolume(50);
-            }
+            
             
             // clear animation frames
             idleFrontFrames.clear();
@@ -378,6 +370,10 @@ class Character {
                     }
                 }
 
+                if(damageCooldownClock.getElapsedTime().asMilliseconds() >= 200) {
+                    sprite.setColor(spritecolor);
+                }
+
                 // character taking damage
                 for(auto& enemy : enemies) {
                     if(nexthitbox.findIntersection(enemy.getHitbox())) {
@@ -388,13 +384,8 @@ class Character {
                             damageSound[index].play();
                             damageCooldownClock.restart();
                         }
-                        if(damageCooldownClock.getElapsedTime().asMilliseconds() >= 200) {
-                            sprite.setColor(spritecolor);
-                        }
                     }
                 }
-
-                
 
                 if (movement != sf::Vector2f{0.f, 0.f}) {
                     if(!isAttacking && !blocked){
@@ -414,9 +405,6 @@ class Character {
                             for(Enemy& enemy : enemies){
                                 if(enemy.getisDead() == false && attack_hitbox.getGlobalBounds().findIntersection(enemy.getHitbox())){
                                     enemy.takeDamage(attackDamage);
-                                    // play a random enemy taking damage sound effect
-                                    int index = rand() % 3;
-                                    enemyDamageSound[index].play();
                                 }
                             }
                             hasHit = true;
@@ -508,6 +496,10 @@ class Character {
         // getters
         float getCurrentHealth(){
             return Health;
+        }
+
+        int getCoinCount(){
+            return Coins;
         }
         
         sf::FloatRect getBounds() const {

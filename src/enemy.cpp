@@ -34,6 +34,8 @@ class Enemy {
         //sound variables
         std::vector<sf::SoundBuffer> attackBuffers;
         std::vector<sf::Sound> attackSound;
+        std::vector<sf::SoundBuffer> enemyDamageBuffers;
+        std::vector<sf::Sound> enemyDamageSound;
         sf::SoundBuffer deathBuffer;
         std::vector<sf::Sound> deathSound;
 
@@ -86,6 +88,8 @@ class Enemy {
             // intialize sound buffers
             attackBuffers.resize(3);
             attackSound.clear();
+            enemyDamageBuffers.resize(3);
+            enemyDamageSound.clear();
             deathSound.clear();
 
             for (int i = 0; i < 3; ++i) {
@@ -94,10 +98,15 @@ class Enemy {
                     attackSound.emplace_back(attackBuffers[i]);
                 }
             }
-
+            for (int i = 0; i < 3; ++i) {
+                std::string path = "../resources/Minifantasy_Dungeon_SFX/21_orc_damage_" + std::to_string(i + 1) + ".wav";
+                if (enemyDamageBuffers[i].loadFromFile(path)) {
+                    enemyDamageSound.emplace_back(enemyDamageBuffers[i]);
+                }
+            }
             if(deathBuffer.loadFromFile("../resources/Minifantasy_Dungeon_SFX/24_orc_death_spin.wav")){
                 deathSound.emplace_back(deathBuffer);
-                deathSound[0].setVolume(20);
+                deathSound[0].setVolume(40);
                 deathSound[0].setPlayingOffset(sf::seconds(0.5f));
             };
 
@@ -105,7 +114,10 @@ class Enemy {
                 attackSound[i].setBuffer(attackBuffers[i]);
                 attackSound[i].setVolume(50);
             }
-
+            for (int i = 0; i < 3; i++) {
+                enemyDamageSound[i].setBuffer(enemyDamageBuffers[i]);
+                enemyDamageSound[i].setVolume(50);
+            }
             // Setup health bar
             float healthBarWidth = 50.f;
             float healthBarHeight = 5.f;
@@ -373,6 +385,9 @@ class Enemy {
             isTakingDamage = true;
             currentHealth = std::max(0.f, currentHealth - amount);
             setAnimation(TAKE_DAMAGE);
+            // play a random enemy taking damage sound effect
+            int index = rand() % 3;
+            enemyDamageSound[index].play();
             
             if (currentHealth <= 0) {
                 setAnimation(DEATH);
@@ -384,7 +399,7 @@ class Enemy {
             window.draw(sprite);
             window.draw(healthBarBackground);
             window.draw(healthBarFill);
-            window.draw(hitbox);
+            // window.draw(hitbox); // for debugging
         }
 
         float getDistancetoTarget(sf::Vector2f target){
@@ -540,8 +555,8 @@ std::vector<Enemy> spawnEnemiesForLevel(int level, const std::vector<sf::FloatRe
                     if(!intersectsWall){
                         validPos = true;
                     } else{
-                        // Move enemy back to original position
-                        enemy.move(-delta.x, -delta.y);
+                        // Move enemy back to a little different position than the original position
+                        enemy.move(-delta.x + 0.1f, -delta.y + 0.1f);
                     }
                     attempts++;
                 }
