@@ -191,12 +191,12 @@ bool ScreenManager::handleStartScreenInput(sf::RenderWindow& window, bool& start
     if (m_startExitButton.getGlobalBounds().contains(sf::Vector2f(worldPos.x, worldPos.y)) && sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
         exitGame = true;
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Space)) {
-        startGame = true;
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Backspace)) {
-        exitGame = true;
-    }
+    // if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Space)) { // inputs for debugging
+    //     startGame = true;
+    // }
+    // if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Backspace)) {
+    //     exitGame = true;
+    // }
 
     return true;
 }

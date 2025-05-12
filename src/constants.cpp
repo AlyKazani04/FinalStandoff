@@ -203,7 +203,7 @@ std::string filepath[3] = {
     "../resources/BossFight.wav"
 };
 
-std::string MENUMUSICFILE = "../resources/MainMenu.wav";
+std::string MENUMUSICFILE = "../resources/MainMenu.mp3";
 
 // TImer Constants
 
