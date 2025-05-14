@@ -120,7 +120,7 @@ class Character {
             doorClosedText.setCharacterSize(24);
             doorClosedText.setFillColor(sf::Color::White);
             doorClosedText.setOutlineColor(sf::Color::Red);
-            doorClosedText.setOutlineThickness(2.5f);
+            doorClosedText.setOutlineThickness(1.5f);
 
             // initialize health bar
             healthBarBackground.setSize(sf::Vector2f(300, 20 ));
