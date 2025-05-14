@@ -1,6 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <string>
+#include "constants.cpp"
 
 // Class to handle the opening crawl animation
 class OpeningCrawl {
@@ -8,7 +9,7 @@ public:
     OpeningCrawl(sf::RenderWindow& window) : window(window), text(font){
         clock.start();
         // Initialize font
-        if (!font.openFromFile("../resources/Fonts/Blacknorthdemo-mLE25.otf")) {
+        if (!font.openFromFile(FONT_PATH)) {
             std::cerr << "Error: Could not load font.\n";
             exit(1);
         }

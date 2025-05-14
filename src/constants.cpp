@@ -247,7 +247,8 @@ const sf::FloatRect EnemySpawns[NUMBER_OF_LEVELS][3] = { // enemy spawns based o
 }; 
 
 // Menu Constants
-
+const std::string MENU_IMAGE = "../resources/MainMenu.jpg";
+const std::string GAMEOVER_IMAGE = "../resources/GameOver.jpg";
 const std::string FONT_PATH = "../resources/Fonts/Blacknorthdemo-mLE25.otf";
 const std::string TITLE_BOX_PATH = "../resources/MainMenuAssets/MenusBox_34x34.png";
 const std::string BUTTON_PATH = "../resources/MainMenuAssets/Button_52x14.png";

@@ -18,6 +18,9 @@ ScreenManager::ScreenManager()
     , m_pauseExitButton()
     , m_pauseResumeText(m_font, "" , 32)
     , m_pauseExitText(m_font, "" , 32)
+    , m_startCreditsText(m_font, "" , 32)
+
+
 {
     // Constructor body is empty - all initialization is done in the initialization list
 }
@@ -98,11 +101,27 @@ bool ScreenManager::setupStartScreen(sf::RenderWindow& window) {
     m_startPlayText.setOrigin(sf::Vector2f(playTextBounds.size.x / 2, playTextBounds.size.y / 2));
     m_startPlayText.setPosition(m_startPlayButton.getPosition());
 
+    /// ─────── CREDITS BUTTON ─────── ///
+    m_startCreditsButton.setSize(sf::Vector2f(200, 60));
+    m_startCreditsButton.setTexture(&m_buttonTexture);
+    m_startCreditsButton.setOrigin(sf::Vector2f(100, 30));
+    m_startCreditsButton.setPosition(sf::Vector2f(window.getView().getSize().x / 2, window.getView().getSize().y / 2 + 80));
+
+    m_startCreditsText.setFont(m_font);
+    m_startCreditsText.setString("Credits");
+    m_startCreditsText.setCharacterSize(32);
+    m_startCreditsText.setFillColor(sf::Color::White);
+
+    // Center the credits text
+    sf::FloatRect creditsTextBounds = m_startCreditsText.getLocalBounds();
+    m_startCreditsText.setOrigin(sf::Vector2f(creditsTextBounds.size.x / 2, creditsTextBounds.size.y / 2));
+    m_startCreditsText.setPosition(m_startCreditsButton.getPosition());
+
     // Setup exit button
     m_startExitButton.setSize(sf::Vector2f(200, 60));
     m_startExitButton.setTexture(&m_buttonTexture);
     m_startExitButton.setOrigin(sf::Vector2f(100, 30));
-    m_startExitButton.setPosition(sf::Vector2f(window.getView().getSize().x / 2, window.getView().getSize().y / 2 + 80));
+    m_startExitButton.setPosition(sf::Vector2f(window.getView().getSize().x / 2, window.getView().getSize().y / 2 + 160));
 
     // Setup exit text
     m_startExitText.setFont(m_font);
@@ -178,8 +197,9 @@ bool ScreenManager::setupPauseScreen(sf::RenderWindow& window) {
     return true;
 }
 
-bool ScreenManager::handleStartScreenInput(sf::RenderWindow& window, bool& startGame, bool& exitGame) {
+bool ScreenManager::handleStartScreenInput(sf::RenderWindow& window, bool& startGame, bool& credits, bool& exitGame) {
     startGame = false;
+    credits = false;
     exitGame = false;
     
     sf::Vector2i mousePos = sf::Mouse::getPosition(window);
@@ -188,15 +208,12 @@ bool ScreenManager::handleStartScreenInput(sf::RenderWindow& window, bool& start
     if (m_startPlayButton.getGlobalBounds().contains(sf::Vector2f(worldPos.x, worldPos.y)) && sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
         startGame = true;
     }
+    if (m_startCreditsButton.getGlobalBounds().contains(sf::Vector2f(worldPos.x, worldPos.y)) && sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
+        credits = true;
+    }
     if (m_startExitButton.getGlobalBounds().contains(sf::Vector2f(worldPos.x, worldPos.y)) && sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
         exitGame = true;
     }
-    // if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Space)) { // inputs for debugging
-    //     startGame = true;
-    // }
-    // if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Backspace)) {
-    //     exitGame = true;
-    // }
 
     return true;
 }
@@ -225,6 +242,8 @@ void ScreenManager::renderStartScreen(sf::RenderWindow& window) {
     // Draw buttons and text
     window.draw(m_startPlayButton);
     window.draw(m_startPlayText);
+    window.draw(m_startCreditsButton);
+    window.draw(m_startCreditsText);
     window.draw(m_startExitButton);
     window.draw(m_startExitText);
 }

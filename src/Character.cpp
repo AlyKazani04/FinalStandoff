@@ -33,10 +33,12 @@ class Character {
         sf::SoundBuffer deathBuffer;
         std::vector<sf::SoundBuffer> walkBuffers;
         std::vector<sf::SoundBuffer> damageBuffers;
+        sf::SoundBuffer coinBuffer;
         std::vector<sf::Sound> attackSound;
         std::vector<sf::Sound> deathSound;
         std::vector<sf::Sound> walkSound;
         std::vector<sf::Sound> damageSound;
+        std::vector<sf::Sound> coinSound;
         sf::Clock walkSoundClock;
         sf::Time walkSoundCooldown = sf::milliseconds(300);
         int lastWalkSoundIndex = -1;
@@ -67,9 +69,12 @@ class Character {
         sf::Color spritecolor;
         sf::Clock damageCooldownClock;
         sf::Time damageCooldown = sf::milliseconds(500); // 0.5 second invulnerability after hit
+        // text variables
+        sf::Clock doorTextTimer;
         sf::Text doorClosedText;
         sf::Font font;
-
+        bool showDoorClosedText = false;
+        sf::Time timeSinceTextShown;
         
     public:
         enum AnimationState {
@@ -87,6 +92,10 @@ class Character {
         
         Character() : currentFrame(0), currentAnimation(IDLE), currentDirection(FRONT), isFacingRight(true), sprite(getGlobalTexture()), doorClosedText(font) {
             move(-100,-100);
+            if(!font.openFromFile(FONT_PATH)){
+                std::cerr << "Error loading font" << std::endl;
+                exit(1);
+            }
         }
         
         void Load(int level){
@@ -105,16 +114,24 @@ class Character {
             lastDirection = FRONT;
             spritecolor = sf::Color::Transparent;
 
+            // initialize door locked text
+            doorClosedText.setFont(font);
+            doorClosedText.setString("Door Locked");
+            doorClosedText.setCharacterSize(24);
+            doorClosedText.setFillColor(sf::Color::White);
+            doorClosedText.setOutlineColor(sf::Color::Red);
+            doorClosedText.setOutlineThickness(2.5f);
+
             // initialize health bar
             healthBarBackground.setSize(sf::Vector2f(300, 20 ));
             healthBarBackground.setFillColor(sf::Color(40,40,40));
             healthBarBackground.setPosition({40, 20});
+            healthBarBackground.setOutlineColor(sf::Color::Black);
+            healthBarBackground.setOutlineThickness(2);
 
             healthBarFill.setSize(healthBarBackground.getSize());
             healthBarFill.setFillColor(sf::Color::Green);
             healthBarFill.setPosition(healthBarBackground.getPosition());
-            healthBarFill.setOutlineColor(sf::Color::Black);
-            healthBarFill.setOutlineThickness(2);
 
             // intialize sound buffers
             attackBuffers.resize(3);
@@ -124,6 +141,7 @@ class Character {
             damageSound.clear();
             walkSound.clear();
             deathSound.clear();
+            coinSound.clear();
             
 
             for (int i = 0; i < 3; ++i) {
@@ -147,9 +165,15 @@ class Character {
             
             if(deathBuffer.loadFromFile("../resources/Minifantasy_Dungeon_SFX/14_human_death_spin.wav")){
                 deathSound.emplace_back(deathBuffer);
-                deathSound[0].setVolume(20);
+                deathSound[0].setVolume(40);
                 deathSound[0].setPlayingOffset(sf::seconds(0.5f));
             };
+
+            if(coinBuffer.loadFromFile("../resources/coinCollect.mp3")){
+                coinSound.emplace_back(coinBuffer);
+                coinSound[0].setVolume(30);
+                coinSound[0].setPlayingOffset(sf::seconds(.1f));
+            }
             
             for(int i = 0; i < 3; i++){
                 attackSound[i].setBuffer(attackBuffers[i]);
@@ -282,11 +306,16 @@ class Character {
 
             if (!isDead) {
 
-                if (Health <= 0) {
+                if (Health <= 0) { // set death animation
                     setAnimation(DEATH, RIGHT);
                     isDead = true;
                     deathSound[0].play();
                 }
+
+                if((doorTextTimer.getElapsedTime().asSeconds() - timeSinceTextShown.asSeconds()) > 1.5f){ // reset door text timer
+                    showDoorClosedText = false;
+                }
+
                 // Handle movement
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::A)) {
                     movement = {-speed * deltaTime, 0.f};
@@ -357,13 +386,19 @@ class Character {
                             if(propID == 24){ // check if its a coin
                                 prop.collectTile(tileX, tileY);
                                 ++Coins;
+                                coinSound[0].play();
                             }
                             if(propID == 31){ // check if its a key
                                 prop.collectTile(tileX, tileY);
                                 KeyCollected = true;
                             }
-                            if(prop.isDoor(rect) && KeyCollected == true && allEnemiesDead == true){ // check if its a door and whether the key has been collected, also check if enemies are dead(todo)
-                                movetonextlevel = true;
+                            if(prop.isDoor(rect)){
+                                if(KeyCollected == true && allEnemiesDead == true){ // check if its a door and whether the key has been collected, also check if enemies are dead
+                                    movetonextlevel = true;
+                                } else{
+                                    showDoorClosedText = true;
+                                    timeSinceTextShown = doorTextTimer.getElapsedTime();
+                                }
                             }
                             break;
                         }
@@ -474,6 +509,10 @@ class Character {
             window.draw(sprite);
             window.draw(healthBarBackground);
             window.draw(healthBarFill);
+            doorClosedText.setPosition({window.getView().getSize().x - 250, 40});
+            if(showDoorClosedText == true){
+                window.draw(doorClosedText);
+            }
         }
         
         void playWalkSound() {

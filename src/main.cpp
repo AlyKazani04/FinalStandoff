@@ -43,10 +43,26 @@ int main(){
     GameOver gameOver(window);
     ScreenManager screenHandle;
     screenHandle.initialize(window);
+
+    sf::Image Menu_BG(MENU_IMAGE);
+    sf::Texture Menu_Texture;
+    sf::RectangleShape windowRect;
+    sf::Image GameOver_BG(GAMEOVER_IMAGE);
+    sf::Texture GameOver_Texture;
+    sf::RectangleShape GameOver_Rect;
+    if(!Menu_Texture.loadFromImage(Menu_BG)){
+        std::cerr << "Menu Image didn't load" << std::endl;
+    }
+    if(!GameOver_Texture.loadFromImage(GameOver_BG)){
+    std::cerr << "Game Over Image didn't load" << std::endl;
+    }
+    windowRect.setTexture(&Menu_Texture);
+    GameOver_Rect.setTexture(&GameOver_Texture);
     
     window.setFramerateLimit(60);  // Max FrameRate set to 60 
     menubgm.LoadMusic();
     menubgm.play();
+    srand(4);
 
     while (window.isOpen()){
         // INITIALIZE (LOOP)
@@ -89,17 +105,25 @@ int main(){
                     break;
                 case MENU: // process menu events here
                 {
+                    windowRect.setSize(window.getView().getSize());
+                    window.setMouseCursorVisible(true);
+
                     prevScreen = MENU;
                     if (inputBlocked && inputCooldown.getElapsedTime().asSeconds() < 0.3f)
                         break; // Skip handling input if cooldown is active
                     inputBlocked = false; // Reset after cooldown passes
 
-                    bool startgame = false, exitgame = false;
-                    screenHandle.handleStartScreenInput(window, startgame, exitgame);
+                    bool startgame = false, iscredits = false, exitgame = false;
+                    screenHandle.handleStartScreenInput(window, startgame, iscredits, exitgame);
                     if(startgame){
                         instructions.instructionClockRestart();
                         currentScreen = INSTRUCTIONS;
-                    } else if(exitgame){
+                    }
+                    if(iscredits){
+                        credits.creditsClockRestart();
+                        currentScreen = CREDITS;
+                    }
+                    if(exitgame){
                         window.close();
                     }  
                 }
@@ -228,6 +252,7 @@ int main(){
                 case DEATHMATCH: // optional at this point
                     break;
                 case GAMEOVER:
+                    GameOver_Rect.setSize(window.getView().getSize());
                     if(gameOver.update(window)){
                         inputBlocked = true; // block input for a small time to prevent multiple calls to exit
                         inputCooldown.restart();
@@ -257,6 +282,8 @@ int main(){
                     crawl.draw();
                     break;
                 case MENU: // draw menu stuff here
+                    window.draw(windowRect);
+                    
                     screenHandle.renderStartScreen(window);
                     break;
                 case INSTRUCTIONS:
@@ -308,6 +335,7 @@ int main(){
                 case DEATHMATCH:
                     break;
                 case GAMEOVER:
+                    window.draw(GameOver_Rect);
                     gameOver.draw(window);
                     break;
                 case CREDITS:
@@ -323,5 +351,5 @@ int main(){
     // DEINITIALIZE GAME
 
 
-        return 0;
+    return 0;
 }

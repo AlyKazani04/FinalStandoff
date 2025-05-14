@@ -21,7 +21,7 @@ public:
     void renderPauseScreen(sf::RenderWindow& window);
     
     // Handle input
-    bool handleStartScreenInput(sf::RenderWindow& window, bool& startGame, bool& exitGame);
+    bool handleStartScreenInput(sf::RenderWindow& window, bool& startGame, bool& credits, bool& exitGame);
     bool handlePauseScreenInput(sf::RenderWindow& window, bool& resumeGame, bool& exitGame);
 
 private:
@@ -37,7 +37,9 @@ private:
     sf::RectangleShape m_startExitButton;
     sf::Text m_startPlayText;
     sf::Text m_startExitText;
-    
+    sf::RectangleShape m_startCreditsButton;
+    sf::Text m_startCreditsText;
+
     // Pause screen elements
     sf::RectangleShape darkbg;
     sf::Text m_pauseTitle;

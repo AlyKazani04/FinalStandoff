@@ -8,7 +8,7 @@ sf::Vector2f baseresolutionbutfloat = sf::Vector2f(LEVEL_WIDTH * TILE_SIZE * SCA
 void createWindow(bool fullscreen) {
     if (fullscreen) {
         sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
-        window.create(desktop, "Final Standoff", sf::Style::None); // Borderless fullscreen
+        window.create(desktop, "Final Standoff", sf::Style::None);
     } else {
         window.create(sf::VideoMode(baseresolution), "Final Standoff", sf::Style::Default);
     }
@@ -18,4 +18,7 @@ void createWindow(bool fullscreen) {
     
     view.setViewport(sf::FloatRect({0.f, 0.f}, {1.f, 1.f})); // Stretch
     window.setView(view);
+    
+    // Ensure cursor is visible after window creation
+    window.setMouseCursorVisible(true);
 }

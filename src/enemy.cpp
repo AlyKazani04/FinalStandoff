@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <vector>
 #include <cmath>
 #include <iostream>
@@ -96,28 +97,21 @@ class Enemy {
                 std::string path = "../resources/Minifantasy_Dungeon_SFX/17_orc_atk_sword_" + std::to_string(i + 1) + ".wav";
                 if (attackBuffers[i].loadFromFile(path)) {
                     attackSound.emplace_back(attackBuffers[i]);
+                    attackSound[i].setVolume(50);
                 }
             }
             for (int i = 0; i < 3; ++i) {
                 std::string path = "../resources/Minifantasy_Dungeon_SFX/21_orc_damage_" + std::to_string(i + 1) + ".wav";
                 if (enemyDamageBuffers[i].loadFromFile(path)) {
                     enemyDamageSound.emplace_back(enemyDamageBuffers[i]);
+                    enemyDamageSound[i].setVolume(50);
                 }
             }
             if(deathBuffer.loadFromFile("../resources/Minifantasy_Dungeon_SFX/24_orc_death_spin.wav")){
                 deathSound.emplace_back(deathBuffer);
                 deathSound[0].setVolume(40);
-                deathSound[0].setPlayingOffset(sf::seconds(0.5f));
             };
 
-            for(int i = 0; i < 3; i++){
-                attackSound[i].setBuffer(attackBuffers[i]);
-                attackSound[i].setVolume(50);
-            }
-            for (int i = 0; i < 3; i++) {
-                enemyDamageSound[i].setBuffer(enemyDamageBuffers[i]);
-                enemyDamageSound[i].setVolume(50);
-            }
             // Setup health bar
             float healthBarWidth = 50.f;
             float healthBarHeight = 5.f;
@@ -205,7 +199,8 @@ class Enemy {
         }
 
         void update(float deltaTime, const std::vector<sf::FloatRect>& mapRects, sf::FloatRect target) {
-            if (isDead) {
+
+            if (isDead) { // dont attack while dead
                 setAnimation(DEATH);
                 isAttacking = false;
             }
@@ -238,9 +233,13 @@ class Enemy {
             }
             
             sf::Vector2f movement = {0,0};
-            float speed = 200.f;
+            const float ENEMY_SPEED = 100.f;
+            const float FOLLOW_DISTANCE = 350.f;
+            const float ATTACK_DISTANCE = 20.f;
             
             if(!isDead) {
+
+                // set death
                 if (currentHealth <= 0) {
                     setAnimation(Enemy::DEATH);
                     isDead = true;
@@ -248,48 +247,57 @@ class Enemy {
                 }
 
                 // set move logic
-                const float ENEMY_SPEED = 100.f;
-                const float FOLLOW_DISTANCE = 350.f;
                 if(getDistancetoTarget(target.position) < FOLLOW_DISTANCE){
                     sf::Vector2f direction = getDirectiontoTarget(target.position);
                     direction = avoidWalls(direction, mapRects);
-                    movement.x = ENEMY_SPEED * direction.x * deltaTime;
-                    movement.y = ENEMY_SPEED * direction.y * deltaTime;
+                    movement = ENEMY_SPEED * direction * deltaTime;
                 }
 
-                sf::FloatRect nexthitbox = hitbox.getGlobalBounds();
-                nexthitbox.position.x += movement.x;
-                nexthitbox.position.y += movement.y;
-                
-                bool blocked = false;
-                for(const auto& rect : mapRects) {
-                    if(nexthitbox.findIntersection(rect)) {
-                        blocked = true;
+                sf::FloatRect originalHitbox = hitbox.getGlobalBounds();
+                sf::Vector2f newMovement = {};
+
+                // try x movement
+                sf::FloatRect testX = originalHitbox;
+                testX.position.x += movement.x;
+                bool blockedX = false;
+                for (const auto& wall : mapRects) {
+                    if (testX.findIntersection(wall)) {
+                        blockedX = true;
                         break;
                     }
                 }
-                for(const auto& rect : mapRects) {
-                    if(nexthitbox.findIntersection(rect)) {
-                        blocked = true;
+                if(!blockedX){
+                    newMovement.x = movement.x;
+                }
+
+                // try y movement
+                sf::FloatRect testY = originalHitbox;
+                testY.position.y += movement.y;
+                bool blockedY = false;
+                for (const auto& wall : mapRects) {
+                    if (testY.findIntersection(wall)) {
+                        blockedY = true;
                         break;
                     }
                 }
+                if(!blockedY){
+                    newMovement.y = movement.y;
+                }
+
                 
                 //attacking logic
-                const float ATTACK_DISTANCE = 20.f;
                 if(getDistancetoTarget(target.position) < ATTACK_DISTANCE) {
                     isAttacking = true;
-                    movement = {};
+                    movement = {}; // stop
                     // play a random attack sound effect
                     int index = rand() % 3;
                     attackSound[index].play();
                 }
-                if (movement != sf::Vector2f{0.f, 0.f}) {
-                    if(!isAttacking && !blocked){
-                        move(movement.x, movement.y);
+
+                if (newMovement != sf::Vector2f{0.f, 0.f}) {
+                    move(newMovement.x, newMovement.y);
+                    if(!isAttacking){
                         setAnimation(MOVE);
-                    } else if(!isAttacking){
-                        setAnimation(IDLE);
                     }
                 } else {
                     if(isAttacking == true){
@@ -409,49 +417,37 @@ class Enemy {
             return distance;
         }
 
-        sf::Vector2f avoidWalls(sf::Vector2f direction, const std::vector<sf::FloatRect>& mapRects){
-            const float OBSTACLE_AVOIDANCE_DISTANCE = 50.f;
-            sf::Vector2f avoidanceTotal(0.f, 0.f);
-            float totalWeight = 0.f;
+        sf::Vector2f avoidWalls(const sf::Vector2f& directionToTarget, const std::vector<sf::FloatRect>& mapRects) {
+            sf::Vector2f newDirection = directionToTarget;
 
-            sf::Vector2f position = hitbox.getPosition(); // Get agent's current position
+            // Get the center of the hitbox (enemy position)
+            sf::Vector2f myPos = getHitbox().position + sf::Vector2f(getHitbox().size.x / 2, getHitbox().size.y / 2);
 
             for (const auto& rect : mapRects) {
-                // Calculate center of the obstacle
-                float obstacleCenterX = rect.position.x + rect.size.x / 2.f;
-                float obstacleCenterY = rect.position.y + rect.size.y / 2.f;
+                if (rect.findIntersection(getHitbox())) {
+                    // Already intersecting, no need to repel further
+                    continue;
+                }
 
-                float dx = obstacleCenterX - position.x;
-                float dy = obstacleCenterY - position.y;
-                float distance = std::sqrt(dx * dx + dy * dy);
+                sf::Vector2f wallCenter(rect.position.x + rect.size.x / 2, rect.position.y + rect.size.y / 2);
+                sf::Vector2f toWall = wallCenter - myPos;
+                float dist = std::sqrt(toWall.x * toWall.x + toWall.y * toWall.y);
 
-                if (distance < OBSTACLE_AVOIDANCE_DISTANCE && distance > 0.f) {
-                    // Direction away from obstacle
-                    sf::Vector2f avoidanceDir(-dx / distance, -dy / distance);
-                    
-                    // Stronger repulsion the closer we are
-                    float weight = std::pow(1.f - (distance / OBSTACLE_AVOIDANCE_DISTANCE), 2.f);
-                    
-                    avoidanceTotal += avoidanceDir * weight;
-                    totalWeight += weight;
+                if (dist < 60.f) {  // Only repel if close enough
+                    sf::Vector2f repelDir = -toWall / dist; // Repel away
+                    float strength = 60.f - dist; // Stronger when closer
+                    newDirection += repelDir * strength * 0.02f;
                 }
             }
 
-            // Blend the original direction with the accumulated avoidance
-            sf::Vector2f adjustedDirection = direction;
+            // Normalize final direction
+            float len = std::sqrt(newDirection.x * newDirection.x + newDirection.y * newDirection.y);
+            if (len != 0)
+                newDirection /= len;
 
-            if (totalWeight > 0.f) {
-                adjustedDirection += avoidanceTotal;
-            }
-
-            // Normalize the final direction
-            float length = std::sqrt(adjustedDirection.x * adjustedDirection.x + adjustedDirection.y * adjustedDirection.y);
-            if (length > 0.f) {
-                adjustedDirection /= length;
-            }
-
-            return adjustedDirection;
+            return newDirection;
         }
+
 
         sf::Vector2f getDirectiontoTarget(sf::Vector2f target){
             sf::Vector2f direction;

@@ -11,6 +11,7 @@ class GameOver{
         sf::Text buttonText;
         sf::Texture buttonTexture;
         sf::Sprite buttonSprite;
+        sf::Texture backgroundTexture;
         int coins = 0;
 
     public:
