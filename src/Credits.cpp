@@ -79,7 +79,7 @@ public:
     }
 
     void saveCoins(int val){
-        coins += val;
+        coins = val;
         coinsText.setString("Coins: " + std::to_string(coins));
 
         sf::FloatRect coinsBounds = coinsText.getLocalBounds();
