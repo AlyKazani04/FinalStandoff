@@ -51,7 +51,7 @@ int FLOORS[NUMBER_OF_LEVELS][LEVEL_HEIGHT][LEVEL_WIDTH] = {
     },
     {   // Level 3 floor
         { { 0}, { 0}, { 0}, { 0}, { 0}, { 0}, { 0}, { 0}, { 0}, {17}, {18}, {18}, {19}, { 0}, { 0}, { 0}, { 0}, { 0}, { 0}, { 0}, { 0}, { 0} }, 
-        { { 0}, { 0}, { 0}, { 0}, { 0}, { 0}, { 0}, { 0}, { 0}, {17}, {18}, {18}, {19}, { 0}, { 0}, { 0}, { 0}, { 0}, { 0}, { 0}, { 0}, { 0} }, // to make heavily worn
+        { { 0}, { 0}, { 0}, { 0}, { 0}, { 0}, { 0}, { 0}, { 0}, {17}, {18}, {18}, {19}, { 0}, { 0}, { 0}, { 0}, { 0}, { 0}, { 0}, { 0}, { 0} },
         { { 0}, { 0}, { 9}, {10}, {10}, {10}, {10}, {10}, {10}, {14}, {18}, {18}, {13}, {10}, {10}, {10}, {10}, {10}, {10}, {11}, { 0}, { 0} },
         { { 0}, { 0}, {17}, {18}, {18}, {18}, {18}, {18}, {18}, {18}, {18}, {18}, {18}, {18}, {18}, {18}, {18}, {18}, {18}, {19}, { 0}, { 0} },
         { { 0}, { 0}, {17}, {18}, {18}, {18}, {18}, {18}, {18}, {18}, {18}, {18}, {22}, {18}, {18}, {18}, {18}, {18}, {18}, {19}, { 0}, { 0} },
@@ -197,7 +197,7 @@ int PROPS[NUMBER_OF_LEVELS][LEVEL_HEIGHT][LEVEL_WIDTH] = { // 24 = coin, 26 = do
 
 // Sound Constants
 
-std::string filepath[3] = {
+std::string filepath[3] = { // bgm paths
     "../resources/MiniFantasy_Dungeon_Music/Music/Goblins_Dance_(Battle).wav",
     "../resources/MiniFantasy_Dungeon_Music/Music/Goblins_Dance_(Battle).wav",
     "../resources/BossFight.wav"
@@ -207,7 +207,7 @@ std::string MENUMUSICFILE = "../resources/MainMenu.mp3";
 
 // TImer Constants
 
-sf::Time timers[] = {
+sf::Time timers[] = { // level timers
     sf::seconds(60),
     sf::seconds(60),
     sf::seconds(90)
@@ -218,9 +218,9 @@ const float MAX_HEALTH = 100;
 const int FRAME_WIDTH = 48;
 const int FRAME_HEIGHT = 48;
 const int FRAMES_PER_ROW = 6;  // Number of frames in each row
-const float character_SCALE = 4;
+const float character_SCALE = 4; // Scale of the character sprite
 
-sf::Vector2f characterSpawns[3] = {
+sf::Vector2f characterSpawns[3] = { // character spawn points in each level
     sf::Vector2f(TILE_SIZE * SCALE * 3.5f, TILE_SIZE * SCALE * 11),
     sf::Vector2f(TILE_SIZE * SCALE * 2.5f, TILE_SIZE * SCALE * 7),
     sf::Vector2f(TILE_SIZE * SCALE * 10.5f, (TILE_SIZE * SCALE * 11 - 7.f))

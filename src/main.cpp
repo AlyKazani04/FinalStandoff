@@ -18,7 +18,7 @@ enum GameScreen{NARRATIVE, MENU, INSTRUCTIONS, LEVEL1, LEVEL2, LEVEL3, DEATHMATC
 int main(){
 
     // INITIALIZE GAME
-    GameScreen currentScreen = NARRATIVE; // Show OpeningCrawl first
+    GameScreen currentScreen = MENU; // Show OpeningCrawl first
     GameScreen prevScreen = currentScreen;
     Floor floor;
     Map map;
@@ -120,7 +120,8 @@ int main(){
                         currentScreen = INSTRUCTIONS;
                     }
                     if(iscredits){
-                        credits.creditsClockRestart();
+                        credits.load();
+                        clock.restart();
                         currentScreen = CREDITS;
                     }
                     if(exitgame){
@@ -224,7 +225,9 @@ int main(){
                         LevelNumber = 0;
                         bgm.stop();
                         menubgm.play();
-                        credits.creditsClockRestart();
+                        credits.load();
+                        credits.saveCoins(player.getCoinCount());
+                        clock.restart();
                         currentScreen = CREDITS;
                     }
                     break;

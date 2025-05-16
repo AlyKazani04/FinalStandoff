@@ -104,13 +104,15 @@ class Enemy {
                 std::string path = "../resources/Minifantasy_Dungeon_SFX/21_orc_damage_" + std::to_string(i + 1) + ".wav";
                 if (enemyDamageBuffers[i].loadFromFile(path)) {
                     enemyDamageSound.emplace_back(enemyDamageBuffers[i]);
-                    enemyDamageSound[i].setVolume(50);
+                    enemyDamageSound[i].setVolume(60);
                 }
             }
             if(deathBuffer.loadFromFile("../resources/Minifantasy_Dungeon_SFX/24_orc_death_spin.wav")){
                 deathSound.emplace_back(deathBuffer);
-                deathSound[0].setVolume(40);
-            };
+                deathSound[0].setVolume(60);
+            } else{
+                std::cout << "Enemy death sound didnt load" << std::endl;
+            }
 
             // Setup health bar
             float healthBarWidth = 50.f;
@@ -243,7 +245,9 @@ class Enemy {
                 if (currentHealth <= 0) {
                     setAnimation(Enemy::DEATH);
                     isDead = true;
-                    deathSound[0].play();
+                    if(!(deathSound[0].getStatus() == sf::Sound::Status::Playing)){
+                        deathSound[0].play();
+                    }
                 }
 
                 // set move logic
@@ -288,10 +292,12 @@ class Enemy {
                 //attacking logic
                 if(getDistancetoTarget(target.position) < ATTACK_DISTANCE) {
                     isAttacking = true;
-                    movement = {}; // stop
+                    newMovement = {}; // stop
                     // play a random attack sound effect
                     int index = rand() % 3;
-                    attackSound[index].play();
+                    if(attackSound[index].getStatus() != sf::Sound::Status::Playing){
+                        attackSound[index].play();
+                    }
                 }
 
                 if (newMovement != sf::Vector2f{0.f, 0.f}) {

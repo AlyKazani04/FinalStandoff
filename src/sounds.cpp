@@ -18,7 +18,7 @@ class MenuMusic{
         }
         virtual void play(){ // play music
             
-            music.setVolume(50);
+            music.setVolume(40);
             music.setLooping(true);
             music.play();
 

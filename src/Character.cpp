@@ -75,6 +75,7 @@ class Character {
         sf::Font font;
         bool showDoorClosedText = false;
         sf::Time timeSinceTextShown;
+        bool gameRestarted = false;
         
     public:
         enum AnimationState {
@@ -100,6 +101,10 @@ class Character {
         
         void Load(int level){
             
+            if(gameRestarted == true){
+                Coins = 0;
+            }
+
             // initialize character variables
             LevelNumber = level;
             Health = MAX_HEALTH;
@@ -188,6 +193,9 @@ class Character {
                 damageSound[i].setVolume(50);
             }
             
+            if(level == 2){
+                gameRestarted = true;
+            }
             
             // clear animation frames
             idleFrontFrames.clear();
