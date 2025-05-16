@@ -9,7 +9,8 @@ This project was developed over the course of three months by a group of second-
 
 Exciting updates are still in development, including multiplayer support, expanded levels, new character types, open-world exploration, and much more. Stay tuned and follow us for the latest news and updates!
 
- ![image](https://github.com/user-attachments/assets/f66e7823-8b57-4268-aa4c-6ae703eb90c6) 
+![image](https://github.com/user-attachments/assets/6e009aa2-6284-4c7d-a3f2-7e29a3e32ffd)
+
  
  ![image](https://github.com/user-attachments/assets/ce767f0d-08b6-47fc-af5c-605982d3dbdf)
 
