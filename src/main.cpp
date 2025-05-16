@@ -18,7 +18,7 @@ enum GameScreen{NARRATIVE, MENU, INSTRUCTIONS, LEVEL1, LEVEL2, LEVEL3, DEATHMATC
 int main(){
 
     // INITIALIZE GAME
-    GameScreen currentScreen = MENU; // Show OpeningCrawl first
+    GameScreen currentScreen = NARRATIVE; // Show OpeningCrawl first
     GameScreen prevScreen = currentScreen;
     Floor floor;
     Map map;
