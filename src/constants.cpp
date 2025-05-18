@@ -214,6 +214,7 @@ sf::Time timers[] = { // level timers
 };
 
 // Character Constants
+const std::string coinsFile = "../resources/Coins.txt"; // file to save coins
 const float MAX_HEALTH = 100;
 const int FRAME_WIDTH = 48;
 const int FRAME_HEIGHT = 48;

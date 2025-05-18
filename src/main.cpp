@@ -69,7 +69,7 @@ int main(){
         while (const std::optional event = window.pollEvent()){
             if (event->is<sf::Event::Closed>()){ 
                 bgm.stop(); // stop the music
-
+                player.saveCoinstoFile();
                 window.close();
             }
             if(event->is<sf::Event::KeyPressed>() && event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape && isFullScreen == true){ // toggle windowed mode
@@ -159,6 +159,7 @@ int main(){
                             Enemies.clear();
                             bgm.stop();
                             menubgm.play();
+                            player.saveCoinstoFile();
                             gameOver.saveCoins(player.getCoinCount());
                             currentScreen = GAMEOVER;
                         }
@@ -187,6 +188,7 @@ int main(){
                             Enemies.clear();
                             bgm.stop();
                             menubgm.play();
+                            player.saveCoinstoFile();
                             gameOver.saveCoins(player.getCoinCount());
                             currentScreen = GAMEOVER;
                         }
@@ -218,6 +220,7 @@ int main(){
                             Enemies.clear();
                             bgm.stop();
                             menubgm.play();
+                            player.saveCoinstoFile();
                             gameOver.saveCoins(player.getCoinCount());
                             currentScreen = GAMEOVER;
                         }
@@ -226,6 +229,7 @@ int main(){
                         bgm.stop();
                         menubgm.play();
                         credits.load();
+                        player.saveCoinstoFile();
                         credits.saveCoins(player.getCoinCount());
                         clock.restart();
                         currentScreen = CREDITS;
@@ -233,13 +237,13 @@ int main(){
                     break;
                 case PAUSE:
                 {
-                    bool resumegame = false, exitgame = false;
-                    screenHandle.handlePauseScreenInput(window, resumegame,exitgame);
+                    bool resumegame = false, backtomenu = false;
+                    screenHandle.handlePauseScreenInput(window, resumegame,backtomenu);
                     if(resumegame){
                         isPause = false;
                         timer.unpause();
                         currentScreen = prevScreen;
-                    } else if(exitgame){
+                    } else if(backtomenu){
                         Enemies.clear();
                         bgm.stop();
                         menubgm.play();
@@ -274,6 +278,7 @@ int main(){
                     bgm.stop();
                     menubgm.play();
                     currentScreen = MENU;
+                    player.saveCoinstoFile();
                     return 0;
             }
         }

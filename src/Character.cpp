@@ -2,6 +2,7 @@
 #include <SFML/Audio.hpp>
 #include <vector>
 #include <string>
+#include <fstream>
 #include <iostream>
 #include "constants.cpp"
 #include "levels.cpp"
@@ -540,6 +541,16 @@ class Character {
             }
         }
 
+        void saveCoinstoFile(){
+            std::ofstream file(coinsFile);
+            if (file.is_open()) {
+                file << "Coins: " << Coins;
+                file.close();
+            } else {
+                std::cerr << "Error opening file for writing" << std::endl;
+            }
+        }
+
         // getters
         float getCurrentHealth(){
             return Health;
@@ -570,6 +581,7 @@ class Character {
             return lastDirection;
         }
         
+
         // return flags
         bool isPlayerDead(){ 
             return isDead && deathAnimationFinished && deathTimer.getElapsedTime().asSeconds() >= 1.5f;
