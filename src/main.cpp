@@ -31,6 +31,10 @@ int main(){
     std::vector<Enemy> Enemies;
     sf::Clock inputCooldown;
     std::fstream file(coinsFile, std::ios::out); // file to save coins
+    if(!file.is_open()){
+        std::cerr << "Error opening file" << std::endl;
+        return 1;
+    }
     bool inputBlocked = false;
     
     int LevelNumber = 0;
@@ -71,6 +75,7 @@ int main(){
             if (event->is<sf::Event::Closed>()){ 
                 bgm.stop(); // stop the music
                 file << player; // save coins to file
+                file.close();
                 window.close();
             }
             if(event->is<sf::Event::KeyPressed>() && event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape && isFullScreen == true){ // toggle windowed mode
@@ -126,6 +131,8 @@ int main(){
                         currentScreen = CREDITS;
                     }
                     if(exitgame){
+                        file << player; // save coins to file
+                        file.close();
                         window.close();
                     }  
                 }
@@ -189,7 +196,7 @@ int main(){
                             Enemies.clear();
                             bgm.stop();
                             menubgm.play();
-                            file << player; 
+                            file << player;
                             gameOver.saveCoins(player.getCoinCount());
                             currentScreen = GAMEOVER;
                         }
@@ -359,6 +366,6 @@ int main(){
     }
     // DEINITIALIZE GAME
 
-
+    file.close();
     return 0;
 }

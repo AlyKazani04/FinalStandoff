@@ -630,10 +630,6 @@ class Character {
 };
 
 std::fstream& operator<<(std::fstream& file, Character& player){ // friend function to overload << operator to save coins to file
-    if (file.is_open()) {
-        file << "Coins: " << player.getCoinCount();
-        file.close();
-    } else {
-        std::cerr << "Error writing to file" << std::endl;
-    }
+    file << "Coins: " << player.getCoinCount();
+    return file;
 }
