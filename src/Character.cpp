@@ -100,6 +100,8 @@ class Character {
             }
         }
         
+        friend std::fstream& operator<<(std::fstream& file, Character& player); // a friend function to save coins to file
+
         void Load(int level){
             
             if(gameRestarted == true){
@@ -541,15 +543,7 @@ class Character {
             }
         }
 
-        void saveCoinstoFile(){
-            std::ofstream file(coinsFile);
-            if (file.is_open()) {
-                file << "Coins: " << Coins;
-                file.close();
-            } else {
-                std::cerr << "Error opening file for writing" << std::endl;
-            }
-        }
+        
 
         // getters
         float getCurrentHealth(){
@@ -635,3 +629,11 @@ class Character {
         Direction lastDirection = FRONT; // store last direction
 };
 
+std::fstream& operator<<(std::fstream& file, Character& player){ // friend function to overload << operator to save coins to file
+    if (file.is_open()) {
+        file << "Coins: " << player.getCoinCount();
+        file.close();
+    } else {
+        std::cerr << "Error writing to file" << std::endl;
+    }
+}

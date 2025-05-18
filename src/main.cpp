@@ -30,6 +30,7 @@ int main(){
     sf::Clock clock;
     std::vector<Enemy> Enemies;
     sf::Clock inputCooldown;
+    std::fstream file(coinsFile, std::ios::out); // file to save coins
     bool inputBlocked = false;
     
     int LevelNumber = 0;
@@ -69,7 +70,7 @@ int main(){
         while (const std::optional event = window.pollEvent()){
             if (event->is<sf::Event::Closed>()){ 
                 bgm.stop(); // stop the music
-                player.saveCoinstoFile();
+                file << player; // save coins to file
                 window.close();
             }
             if(event->is<sf::Event::KeyPressed>() && event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape && isFullScreen == true){ // toggle windowed mode
@@ -159,7 +160,7 @@ int main(){
                             Enemies.clear();
                             bgm.stop();
                             menubgm.play();
-                            player.saveCoinstoFile();
+                            file << player;
                             gameOver.saveCoins(player.getCoinCount());
                             currentScreen = GAMEOVER;
                         }
@@ -188,7 +189,7 @@ int main(){
                             Enemies.clear();
                             bgm.stop();
                             menubgm.play();
-                            player.saveCoinstoFile();
+                            file << player; 
                             gameOver.saveCoins(player.getCoinCount());
                             currentScreen = GAMEOVER;
                         }
@@ -220,7 +221,7 @@ int main(){
                             Enemies.clear();
                             bgm.stop();
                             menubgm.play();
-                            player.saveCoinstoFile();
+                            file << player;
                             gameOver.saveCoins(player.getCoinCount());
                             currentScreen = GAMEOVER;
                         }
@@ -229,7 +230,7 @@ int main(){
                         bgm.stop();
                         menubgm.play();
                         credits.load();
-                        player.saveCoinstoFile();
+                        file << player;
                         credits.saveCoins(player.getCoinCount());
                         clock.restart();
                         currentScreen = CREDITS;
@@ -278,7 +279,7 @@ int main(){
                     bgm.stop();
                     menubgm.play();
                     currentScreen = MENU;
-                    player.saveCoinstoFile();
+                    file << player;
                     return 0;
             }
         }
