@@ -16,12 +16,11 @@ This project was developed over the course of three months by a group of second-
 Exciting updates are still in development, including multiplayer support, expanded levels, new character types, open-world exploration, and much more. Stay tuned and follow us for the latest news and updates!
 
 ## Running the Game
-### To run the game, simply follow these steps:
-- Go to the releases section on the Github repository.
-- Download the zip of the latest release.
+### To run this game simply follow these steps:
+
 - Unpack the zip.
-- Simply cut the exe file for the game and paste it inside the source code folder named (src).
-- Double click the exe file and enjoy The Final Standoff.
+- Click on FinalStandoff.exe in "src" folder to run.
+- Enjoy.
 
 ![image](https://github.com/user-attachments/assets/6e009aa2-6284-4c7d-a3f2-7e29a3e32ffd)
  
