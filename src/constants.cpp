@@ -197,13 +197,13 @@ int PROPS[NUMBER_OF_LEVELS][LEVEL_HEIGHT][LEVEL_WIDTH] = { // 24 = coin, 26 = do
 
 // Sound Constants
 
-std::string filepath[3] = { // bgm paths
+std::filesystem::path gamebgmpath[3] = { // bgm paths
     "../resources/MiniFantasy_Dungeon_Music/Music/Goblins_Dance_(Battle).wav",
     "../resources/MiniFantasy_Dungeon_Music/Music/Goblins_Dance_(Battle).wav",
     "../resources/BossFight.wav"
 };
 
-std::string MENUMUSICFILE = "../resources/MainMenu.mp3";
+std::filesystem::path MENU_MUSICPATH = "../resources/MainMenu.mp3"; // main menu music path
 
 // TImer Constants
 

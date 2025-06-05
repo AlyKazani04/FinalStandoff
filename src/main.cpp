@@ -2,7 +2,8 @@
 #include <SFML/Audio.hpp>
 #include "levels.cpp"
 #include "constants.cpp"
-#include "sounds.cpp"
+#include "Sound/sound.hpp"
+#include "Sound/sound.cpp"
 #include "fullscreen.cpp"
 #include "timer.cpp"
 #include "Character.cpp"
@@ -13,18 +14,17 @@
 #include "Instructions.cpp"
 #include "GameOver.cpp"
 
-enum GameScreen{NARRATIVE, MENU, INSTRUCTIONS, LEVEL1, LEVEL2, LEVEL3, DEATHMATCH, PAUSE, GAMEOVER, CREDITS};
+enum GameScreen{NARRATIVE, MENU, SETTINGS, INSTRUCTIONS, LEVEL1, LEVEL2, LEVEL3, DEATHMATCH, PAUSE, GAMEOVER, CREDITS};
 
 int main(){
 
     // INITIALIZE GAME
-    GameScreen currentScreen = NARRATIVE; // Show OpeningCrawl first
+    GameScreen currentScreen = NARRATIVE; // Show Narrative first
     GameScreen prevScreen = currentScreen;
     Floor floor;
     Map map;
     Prop prop;
     Character player;
-    MenuMusic menubgm;
     BackGroundMusic bgm;
     Timer timer;
     sf::Clock clock;
@@ -65,8 +65,8 @@ int main(){
     GameOver_Rect.setTexture(&GameOver_Texture);
     
     window.setFramerateLimit(60);  // Max FrameRate set to 60 
-    menubgm.LoadMusic();
-    menubgm.play();
+    bgm.LoadMenuMusic();
+    bgm.play();
     srand(4);
 
     while (window.isOpen()){
@@ -140,11 +140,11 @@ int main(){
                 case INSTRUCTIONS:
                 {
                     if(instructions.update()){
-                        menubgm.stop();
+                        bgm.stop();
                         floor.Load(LevelNumber);       // Levels
                         map.Load(LevelNumber);            // Walls
                         prop.Load(LevelNumber);          // Props
-                        bgm.LoadMusic(LevelNumber);            // Music
+                        bgm.LoadGameMusic(LevelNumber);            // Music
                         timer.LoadTimer(window, LevelNumber);   // Timer
                         player.Load(LevelNumber);                // Player
                         Enemies = spawnEnemiesForLevel(LevelNumber, map.GetMapCollisionRects()); // Enemies
@@ -166,7 +166,8 @@ int main(){
                         if(player.isPlayerDead() || timer.isTimeUp()){
                             Enemies.clear();
                             bgm.stop();
-                            menubgm.play();
+                            bgm.LoadMenuMusic();
+                            bgm.play();
                             file << player;
                             gameOver.saveCoins(player.getCoinCount());
                             currentScreen = GAMEOVER;
@@ -195,7 +196,8 @@ int main(){
                         if(player.isPlayerDead() || timer.isTimeUp()){
                             Enemies.clear();
                             bgm.stop();
-                            menubgm.play();
+                            bgm.LoadMenuMusic();
+                            bgm.play();
                             file << player;
                             gameOver.saveCoins(player.getCoinCount());
                             currentScreen = GAMEOVER;
@@ -206,7 +208,7 @@ int main(){
                         floor.Load(LevelNumber);       
                         map.Load(LevelNumber);           
                         prop.Load(LevelNumber);        
-                        bgm.LoadMusic(LevelNumber);         
+                        bgm.LoadGameMusic(LevelNumber);         
                         timer.LoadTimer(window, LevelNumber);
                         player.Load(LevelNumber);
                         Enemies.clear();
@@ -227,7 +229,8 @@ int main(){
                         if(player.isPlayerDead() || timer.isTimeUp() ){
                             Enemies.clear();
                             bgm.stop();
-                            menubgm.play();
+                            bgm.LoadMenuMusic();
+                            bgm.play();
                             file << player;
                             gameOver.saveCoins(player.getCoinCount());
                             currentScreen = GAMEOVER;
@@ -235,7 +238,8 @@ int main(){
                     } else{
                         LevelNumber = 0;
                         bgm.stop();
-                        menubgm.play();
+                        bgm.LoadMenuMusic();
+                        bgm.play();
                         credits.load();
                         file << player;
                         credits.saveCoins(player.getCoinCount());
@@ -254,7 +258,8 @@ int main(){
                     } else if(backtomenu){
                         Enemies.clear();
                         bgm.stop();
-                        menubgm.play();
+                        bgm.LoadMenuMusic(); // load menu music
+                        bgm.play();
 
                         inputBlocked = true; // block input for a small time to prevent multiple calls to exit
                         inputCooldown.restart();
@@ -284,7 +289,8 @@ int main(){
                     break;
                 default:
                     bgm.stop();
-                    menubgm.play();
+                    bgm.LoadMenuMusic(); // load menu music
+                    bgm.play();
                     currentScreen = MENU;
                     file << player;
                     return 0;
@@ -299,7 +305,6 @@ int main(){
                     break;
                 case MENU: // draw menu stuff here
                     window.draw(windowRect);
-                    
                     screenHandle.renderStartScreen(window);
                     break;
                 case INSTRUCTIONS:

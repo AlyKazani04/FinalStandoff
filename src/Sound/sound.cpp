@@ -1,0 +1,49 @@
+#include <SFML/Audio.hpp>
+#include "sound.hpp"
+#include "../constants.cpp"
+
+bool BackGroundMusic::LoadMenuMusic() // Load music from file
+{
+    if(!_music.openFromFile(MENU_MUSICPATH)){ // open file
+        return false;
+    }else{
+        return true;
+    }
+}
+
+bool BackGroundMusic::LoadGameMusic(int level) // Load music from file
+{
+    _LevelNumber = level;
+    if(!_music.openFromFile(gamebgmpath[level])){ // open file
+        return false;
+    }else{
+        return true;
+    }
+}
+
+void BackGroundMusic::setVolume(int volume)
+{
+    _volume = volume;
+    _music.setVolume(_volume); // set volume of music
+}
+
+void BackGroundMusic::play() // play music
+{
+    if(_LevelNumber == 0 || _LevelNumber == 1)
+    {
+        _music.setVolume(_volume);
+    }
+    if(_LevelNumber == 2)
+    {
+        _music.setVolume(_volume - 30); // the bossfight wav is louder
+    }
+    
+    _music.setLooping(true);
+    _music.setPlayingOffset(sf::seconds(2));
+    _music.play();
+}
+
+void BackGroundMusic::stop() // stop music
+{
+    _music.stop();
+}
