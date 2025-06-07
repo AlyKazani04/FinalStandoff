@@ -4,8 +4,8 @@
 #include <string>
 #include <fstream>
 #include <iostream>
-#include "constants.cpp"
-#include "levels.cpp"
+#include "Constants/constants.hpp"
+#include "Levels/levels.cpp"
 #include "enemy.cpp"
 
 class Character {

@@ -1,6 +1,5 @@
 #include <SFML/Audio.hpp>
 #include "sound.hpp"
-#include "../constants.cpp"
 
 bool BackGroundMusic::LoadMenuMusic() // Load music from file
 {
@@ -29,15 +28,8 @@ void BackGroundMusic::setVolume(int volume)
 
 void BackGroundMusic::play() // play music
 {
-    if(_LevelNumber == 0 || _LevelNumber == 1)
-    {
-        _music.setVolume(_volume);
-    }
-    if(_LevelNumber == 2)
-    {
-        _music.setVolume(_volume - 30); // the bossfight wav is louder
-    }
-    
+    _music.setVolume(_volume); 
+
     _music.setLooping(true);
     _music.setPlayingOffset(sf::seconds(2));
     _music.play();

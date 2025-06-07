@@ -4,8 +4,8 @@
 #include <cmath>
 #include <iostream>
 #include <random>
-#include "constants.cpp"
-#include "levels.cpp"
+#include "Constants/constants.hpp"
+#include "Levels/levels.cpp"
 
 sf::Texture& getGlobalTexture(){
     static sf::Texture texture;

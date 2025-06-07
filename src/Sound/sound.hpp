@@ -1,20 +1,34 @@
 #pragma once
 
 #include <SFML/Audio.hpp>
+#include "../Constants/constants.hpp"
 
-class BackGroundMusic{
+class BackGroundMusic
+{
     private:
         int _LevelNumber = 0; // Current level number
         int _volume = 50; // Default volume
         sf::Music _music; // SFML Music object to handle background music
-        bool _isMenu = false;
         
     public:
         BackGroundMusic(){}
         
-        bool LoadMenuMusic(); // load menu music from file
-        bool LoadGameMusic(int level); // load music from file
-        void setVolume(int volume); // set volume of music;
-        void play(); // play music
-        void stop(); //stop music
+        /// @brief function to load menu music from file
+        /// @return returns true if successful or false if failed
+        bool LoadMenuMusic();
+
+        /// @brief function to load game music from file
+        /// @param level level number
+        /// @return returns true if successful or false if failed
+        bool LoadGameMusic(int level);
+
+        /// @brief function to set volume for music
+        /// @param volume volume level (0-100)
+        void setVolume(int volume);
+
+        /// @brief function to play music
+        void play();
+
+        /// @brief stop music
+        void stop();
 };
