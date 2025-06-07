@@ -1,6 +1,4 @@
-#include <iostream>
 #include "ScreenManager.hpp"
-#include "constants.cpp"
 
 ScreenManager::ScreenManager()
     : m_font()

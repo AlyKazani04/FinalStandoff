@@ -1,18 +1,26 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
-#include "levels.cpp"
-#include "constants.cpp"
+#include "Constants/constants.hpp"
+#include "Constants/constants.cpp"
 #include "Sound/sound.hpp"
 #include "Sound/sound.cpp"
-#include "fullscreen.cpp"
-#include "timer.cpp"
+#include "UI/timer.hpp"
+#include "UI/timer.cpp"
+#include "UI/ScreenManager.hpp"
+#include "UI/ScreenManager.cpp"
+#include "UI/fullscreen.hpp"
+#include "UI/fullscreen.cpp"
+#include "UI/Instructions.hpp"
+#include "UI/Instructions.cpp"
+#include "UI/GameOver.hpp"
+#include "UI/GameOver.cpp"
+#include "UI/Crawls/OpeningCrawl.hpp"
+#include "UI/Crawls/OpeningCrawl.cpp"
+#include "UI/Crawls/Credits.hpp"
+#include "UI/Crawls/Credits.cpp"
+#include "Levels/levels.hpp"
+#include "Levels/levels.cpp"
 #include "Character.cpp"
-#include "ScreenManager.hpp"
-#include "ScreenManager.cpp"
-#include "Crawl.cpp"
-#include "Credits.cpp"
-#include "Instructions.cpp"
-#include "GameOver.cpp"
 
 enum GameScreen{NARRATIVE, MENU, SETTINGS, INSTRUCTIONS, LEVEL1, LEVEL2, LEVEL3, DEATHMATCH, PAUSE, GAMEOVER, CREDITS};
 
@@ -145,7 +153,7 @@ int main(){
                         map.Load(LevelNumber);            // Walls
                         prop.Load(LevelNumber);          // Props
                         bgm.LoadGameMusic(LevelNumber);            // Music
-                        timer.LoadTimer(window, LevelNumber);   // Timer
+                        timer.loadTimer(window, LevelNumber);   // Timer
                         player.Load(LevelNumber);                // Player
                         Enemies = spawnEnemiesForLevel(LevelNumber, map.GetMapCollisionRects()); // Enemies
 
@@ -177,7 +185,7 @@ int main(){
                         floor.Load(LevelNumber);       
                         map.Load(LevelNumber);           
                         prop.Load(LevelNumber);        
-                        timer.LoadTimer(window, LevelNumber);
+                        timer.loadTimer(window, LevelNumber);
                         player.Load(LevelNumber);
                         Enemies.clear();
                         Enemies = spawnEnemiesForLevel(LevelNumber, map.GetMapCollisionRects());
@@ -209,7 +217,7 @@ int main(){
                         map.Load(LevelNumber);           
                         prop.Load(LevelNumber);        
                         bgm.LoadGameMusic(LevelNumber);         
-                        timer.LoadTimer(window, LevelNumber);
+                        timer.loadTimer(window, LevelNumber);
                         player.Load(LevelNumber);
                         Enemies.clear();
                         Enemies = spawnEnemiesForLevel(LevelNumber, map.GetMapCollisionRects());

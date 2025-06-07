@@ -1,18 +1,5 @@
-#pragma once
+#include "constants.hpp"
 
-#include <string>
-#include <SFML/Graphics.hpp>
-
-//level Constants
-
-const int TILE_SIZE = 16; // Using 16 x 16 tiles for simplicity
-const int floortilesetColumns = 8; // Number of tiles in a row of the floor PNG
-const int lavatilesetColumns = 7; // Number of tiles in a row of the lava PNG
-const int maptilesetColumns = 6; // Number of tiles in a row of the map PNG
-const int LEVEL_WIDTH = 22; // Number of tiles in width
-const int LEVEL_HEIGHT = 15; // Number of tiles in height
-const float SCALE = 4; //scaling the window 
-const int NUMBER_OF_LEVELS = 3; // Number of levels in the game
 
 int FLOORS[NUMBER_OF_LEVELS][LEVEL_HEIGHT][LEVEL_WIDTH] = { 
     {   // Level 1 floor
@@ -140,7 +127,7 @@ int MAPS[NUMBER_OF_LEVELS][LEVEL_HEIGHT][LEVEL_WIDTH] = {
     }
 };
 
-int PROPS[NUMBER_OF_LEVELS][LEVEL_HEIGHT][LEVEL_WIDTH] = { // 24 = coin, 26 = door, 33 = torch(sides), 32 = torch(front), 31 = key
+int PROPS[NUMBER_OF_LEVELS][LEVEL_HEIGHT][LEVEL_WIDTH] = { 
     {   // Level 1 props
         { {0}, { 0}, { 0}, {0}, {0}, { 0}, {0}, { 0}, {0}, {0}, { 0}, {0}, { 0}, {0}, { 0}, {0}, {0}, { 0}, {0}, {0}, {  0}, {0} },
         { {0}, { 0}, {26}, {0}, {0}, { 0}, {0}, {32}, {0}, {0}, { 0}, {0}, { 0}, {0}, {32}, {0}, {0}, { 0}, {0}, {0}, {  0}, {0} },
@@ -203,32 +190,18 @@ std::filesystem::path gamebgmpath[3] = { // bgm paths
     "../resources/BossFight.wav"
 };
 
-std::filesystem::path MENU_MUSICPATH = "../resources/MainMenu.mp3"; // main menu music path
-
-// TImer Constants
-
-sf::Time timers[] = { // level timers
+const sf::Time timers[] = { // level timers
     sf::seconds(60),
     sf::seconds(60),
     sf::seconds(90)
 };
 
-// Character Constants
-const std::string coinsFile = "../resources/Coins.txt"; // file to save coins
-const float MAX_HEALTH = 100;
-const int FRAME_WIDTH = 48;
-const int FRAME_HEIGHT = 48;
-const int FRAMES_PER_ROW = 6;  // Number of frames in each row
-const float character_SCALE = 4; // Scale of the character sprite
-
-sf::Vector2f characterSpawns[3] = { // character spawn points in each level
+const sf::Vector2f characterSpawns[3] = { // character spawn points in each level
     sf::Vector2f(TILE_SIZE * SCALE * 3.5f, TILE_SIZE * SCALE * 11),
     sf::Vector2f(TILE_SIZE * SCALE * 2.5f, TILE_SIZE * SCALE * 7),
     sf::Vector2f(TILE_SIZE * SCALE * 10.5f, (TILE_SIZE * SCALE * 11 - 7.f))
 };
 
-// Enemy Constants
-const int ENEMY_FRAMES_PER_ROW = 9;
 const sf::FloatRect EnemySpawns[NUMBER_OF_LEVELS][3] = { // enemy spawns based on levels; max 3 spawns
     {// level 1
         sf::FloatRect({4 * TILE_SIZE * SCALE, 3 * TILE_SIZE * SCALE},{2 * SCALE * TILE_SIZE, 2 * SCALE * TILE_SIZE}),
@@ -246,10 +219,3 @@ const sf::FloatRect EnemySpawns[NUMBER_OF_LEVELS][3] = { // enemy spawns based o
         sf::FloatRect({20 * TILE_SIZE * SCALE, 7 * TILE_SIZE * SCALE},{2 * TILE_SIZE * SCALE, .5f * TILE_SIZE * SCALE}) // right spawn
     }
 }; 
-
-// Menu Constants
-const std::string MENU_IMAGE = "../resources/MainMenu.jpg";
-const std::string GAMEOVER_IMAGE = "../resources/GameOver.jpg";
-const std::string FONT_PATH = "../resources/Fonts/Blacknorthdemo-mLE25.otf";
-const std::string TITLE_BOX_PATH = "../resources/MainMenuAssets/MenusBox_34x34.png";
-const std::string BUTTON_PATH = "../resources/MainMenuAssets/Button_52x14.png";
