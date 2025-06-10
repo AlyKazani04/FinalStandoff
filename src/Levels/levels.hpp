@@ -11,7 +11,7 @@ class Layout
         int (*layout)[LEVEL_WIDTH];// pointer to tile ids
         int LevelNumber = 0;
     public:
-        Layout(){}
+        Layout() = default;
 
         // getter
         int getTileID(int x, int y);

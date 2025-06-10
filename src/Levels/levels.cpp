@@ -1,16 +1,15 @@
-#pragma once
-
 #include "levels.hpp"
 
 // Layout Class Functionality
 
-int Layout::getTileID(int x, int y){
+int Layout::getTileID(int x, int y)
+{
     return layout[y][x];
 }
 
 // Prop Class Functionality
 
-Prop::Prop() : Layout() 
+Prop::Prop() : Layout()
 {
     layout = PROPS[0];
 }
@@ -175,7 +174,8 @@ void Prop::Render(sf::RenderWindow& window)
 
 // Map Class Functionality
 
-Map::Map() : Layout() {
+Map::Map() : Layout()
+{
     layout = MAPS[0];
 }
 
@@ -269,7 +269,7 @@ void Floor::LavaAnimUpdate()
     }
 }
 
-Floor::Floor() : Layout() 
+Floor::Floor() : Layout()
 {
     layout = FLOORS[0];
     lavaAnimClock.start();

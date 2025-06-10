@@ -1,10 +1,11 @@
 #include "fullscreen.hpp"
 
-sf::RenderWindow window;
 sf::Vector2u baseresolution = sf::Vector2u(LEVEL_WIDTH * TILE_SIZE * SCALE, LEVEL_HEIGHT * TILE_SIZE * SCALE);
 sf::Vector2f baseresolutionbutfloat = sf::Vector2f(LEVEL_WIDTH * TILE_SIZE * SCALE, LEVEL_HEIGHT * TILE_SIZE * SCALE);
 
-void createWindow(bool fullscreen) {
+void createWindow(sf::RenderWindow& window, bool fullscreen) 
+{
+
     if (fullscreen) 
     {
         sf::VideoMode desktop = sf::VideoMode::getDesktopMode();

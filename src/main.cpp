@@ -1,32 +1,31 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
+
 #include "Constants/constants.hpp"
-#include "Constants/constants.cpp"
+
 #include "Sound/sound.hpp"
-#include "Sound/sound.cpp"
+
 #include "UI/timer.hpp"
-#include "UI/timer.cpp"
 #include "UI/ScreenManager.hpp"
-#include "UI/ScreenManager.cpp"
 #include "UI/fullscreen.hpp"
-#include "UI/fullscreen.cpp"
 #include "UI/Instructions.hpp"
-#include "UI/Instructions.cpp"
 #include "UI/GameOver.hpp"
-#include "UI/GameOver.cpp"
+
 #include "UI/Crawls/OpeningCrawl.hpp"
-#include "UI/Crawls/OpeningCrawl.cpp"
 #include "UI/Crawls/Credits.hpp"
-#include "UI/Crawls/Credits.cpp"
+
 #include "Levels/levels.hpp"
-#include "Levels/levels.cpp"
-#include "Character.cpp"
+
+#include "Character/Character.hpp"
+#include "Enemy/enemy.hpp"
 
 enum GameScreen{NARRATIVE, MENU, SETTINGS, INSTRUCTIONS, LEVEL1, LEVEL2, LEVEL3, DEATHMATCH, PAUSE, GAMEOVER, CREDITS};
 
 int main(){
 
     // INITIALIZE GAME
+    sf::RenderWindow window;
+
     GameScreen currentScreen = NARRATIVE; // Show Narrative first
     GameScreen prevScreen = currentScreen;
     Floor floor;
@@ -49,7 +48,7 @@ int main(){
     bool isFullScreen = true;
     bool isPause = false;
     
-    createWindow(isFullScreen); // Create window in fullscreen mode
+    createWindow(window, isFullScreen); // Create window in fullscreen mode
     OpeningCrawl crawl(window);
     CreditsCrawl credits(window);
     Instructions instructions(window);
@@ -88,11 +87,11 @@ int main(){
             }
             if(event->is<sf::Event::KeyPressed>() && event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape && isFullScreen == true){ // toggle windowed mode
                 isFullScreen = false;
-                createWindow(isFullScreen);
+                createWindow(window, isFullScreen);
             }
             if(event->is<sf::Event::KeyPressed>() && event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::F11 && isFullScreen == false){ // toggle fullscreen mode
                 isFullScreen = true;
-                createWindow(isFullScreen);
+                createWindow(window, isFullScreen);
             }
             if(event->is<sf::Event::KeyPressed>() && event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::P){
                 if(currentScreen == LEVEL1 || currentScreen == LEVEL2 || currentScreen == LEVEL3){
