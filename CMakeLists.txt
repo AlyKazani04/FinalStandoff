@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_compile_options(-fdiagnostics-color=always -g)
 
 # Define SFML root directory
-set(SFML_ROOT "C:/CCPPLibraries/SFML-3.0.0")
+set(SFML_ROOT "DISK:/PATH/TO/SFML-3.0.0")
 
 # Include directories
 include_directories("${SFML_ROOT}/include")
